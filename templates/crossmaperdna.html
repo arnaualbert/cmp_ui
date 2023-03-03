@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/bootstrap.min.css">
+    <script src="../static/bootstrap.bundle.min.js"></script>
+    <script src="../static/dna.js"></script>
+    <script src="../static/DnaParams.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN"
+        crossorigin="anonymous"></script>
+    <title>DNA Crossmaper</title>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Crossmaper DNA</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/crossmaper">Crossmaper</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="mt-5" id="forms_dna">
+        <form id="form_dna" action="/crossmaper/dna" method="post" enctype="multipart/form-data">
+            <div class="container text-center">
+                <div>
+                    <div id="fastas">
+                        <div id="form_fasta" class=" mt-1 row g-3 row-cols-7">
+                            <div class="col">
+                                <label class="col-form-label" for="fastaq">Fasta</label>
+                            </div>
+                            <div class="col">
+                                <input type="file" id="fastaq" name="fastaq" class="form-control">
+                            </div>
+                            <div class="col">
+                                <label class="col-form-label" for="genome_name">Genome Name</label>
+                            </div>
+                            <div class="col">
+                                <input class="form-control" type="text" name="genome_name" id="genome_name">
+                            </div>
+                            <div class="col">
+                                <label class="col-form-label" for="number_of_reads">Number of reads</label>
+                            </div>
+                            <div class="col">
+                                <input class="form-control" type="number" name="number_of_reads" id="number_of_reads">
+                            </div>
+                            <div class="col">
+                                <button type="button" class="btn btn-outline-secondary btn-sm"
+                                    onclick="addFormFasta()">+</button>
+                            </div>
+                        </div>
+                    </div>
+                    <hr class="border border-secondary border-2 opacity-75">
+                    <div id="read_lengths">
+                        <div id="form_read_length" class=" mt-1 row g-3 row-cols-6">
+                            <div class="col">
+                                <label class="col-form-label" for="read_length">Read Length</label>
+                            </div>
+                            <div class="col">
+                                <input class="form-control" type="number" name="read_length" id="read_length" list="read_length_options"
+                                    value="50">
+                                <datalist id="read_length_options">
+                                    <option selected>50</option>
+                                    <option>75</option>
+                                    <option>100</option>
+                                    <option>125</option>
+                                    <option>150</option>
+                                    <option>300</option>
+                                </datalist>
+                            </div>
+                            <div class="col">
+                                <button type="button" class="btn btn-outline-secondary btn-sm"
+                                    onclick="addFormReadLength()">+</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-2 row g-3 row-cols-6">
+                        <div class="col">
+                            <label class="col-form-label" for="read_configuration">Read configuration</label>
+                        </div>
+                        <div class="col">
+                            <select class="form-select" name="read_configuration" id="read_configuration">
+                                <option value="single-end" selected>SE</option>
+                                <option value="paired-end">PE</option>
+                                <option value="both">Both</option>
+                            </select>
+                        </div>
+                        <div class="col">
+                            <button type="button" class="btn btn-outline-secondary" onclick="showHideDna();">Optional
+                                arguements</button>
+                        </div>
+                        <div id="optional_arguments" class="col">
+                            <p> </p>
+                        </div>
+                        <div id="optional_arguments" class="col">
+                            <label class="col-form-label" for="number_of_cores">Number of cores</label>
+                        </div>
+                        <div id="optional_arguments" class="col">
+                            <input class="form-control" type="number" id="number_of_cores" name="number_of_cores" value="1">
+                        </div>
+                        <div id="optional_arguments" class="col">
+                            <label class="col-form-label" for="base_error_rate">Base error rate</label>
+                        </div>
+                        <div id="optional_arguments" class="col">
+                            <input class="form-control" type="number" id="base_error_rate" name="base_error_rate" value="0.02">
+                        </div>
+                        <div id="optional_arguments" class="col">
+                            <label class="col-form-label" for="outer_distance">Outer distance</label>
+                        </div>
+                        <div id="optional_arguments" class="col">
+                            <input class="form-control" type="number" id="outer_distance" name="outer_distance" value="500">
+                        </div>
+                        <div id="optional_arguments" class="col">
+                            <label class="col-form-label" for="standar_deviation">Standar deviation</label>
+                        </div>
+                        <div id="optional_arguments" class="col">
+                            <input class="form-control" type="number" id="standar_deviation" name="standar_deviation" value="30">
+                        </div>
+                        <div id="optional_arguments" class="col">
+                            <label class="col-form-label" for="coverage">Coverage</label>
+                        </div>
+                        <div id="optional_arguments" class="col">
+                            <input class="form-control" type="number" name="coverage" id="coverage">
+                        </div>
+                        <div id="optional_arguments" class="col">
+                            <label class="col-form-label" for="mutation_rate">Mutation rate</label>
+                        </div>
+                        <div id="optional_arguments" class="col">
+                            <input class="form-control" type="number" id="mutation_rate" name="mutation_rate" value="0.001">
+                        </div>
+                        <div id="optional_arguments" class="col">
+                            <label class="col-form-label" for="indel_fraction">Indel fraction</label>
+                        </div>
+                        <div id="optional_arguments" class="col">
+                            <input class="form-control" type="number" id="indel_fraction" name="indel_fraction" value="0.015">
+                        </div>
+                        <div id="optional_arguments" class="col">
+                            <label class="col-form-label" for="indel_extended">Indel extended</label>
+                        </div>
+                        <div id="optional_arguments" class="col">
+                            <input class="form-control" type="number" id="indel_extended" name="indel_extended" value="0.3">
+                        </div>
+                        <div id="optional_arguments" class="col">
+                            <label class="col-form-label" for="seed_random_generator">Seed Random generator</label>
+                        </div>
+                        <div id="optional_arguments" class="col">
+                            <input class="form-control" type="number" id="seed_random_generator" name="seed_random_generator" value="-1">
+                        </div>
+                        <div id="optional_arguments" class="col">
+                            <label class="col-form-label" for="discard_ambiguos">Discard ambiguos</label>
+                        </div>
+                        <div id="optional_arguments" class="col">
+                            <input class="form-control" type="number" id="discard_ambiguos" name="discard_ambiguos" value="0.05">
+                        </div>
+                        <div id="optional_arguments" class="col">
+                            <label class="col-form-label" for="haplotype_mode">Haplotype mode</label>
+                        </div>
+                        <div id="optional_arguments" class="col">
+                            <select class="form-select" name="haplotype_mode" id="haplotype_mode">
+                                <option value="False" selected>False</option>
+                                <option value="True">True</option>
+                            </select>
+                        </div>
+                        <div id="optional_arguments" class="col">
+                            <label class="col-form-label" for="output_directory">Output Directory</label>
+                        </div>
+                        <div id="optional_arguments" class="col">
+                            <input class="form-control" type="text" id="output_directory" name="output_directory" value="crossmap_out">
+                        </div>
+                        <div id="optional_arguments" class="col">
+                            <label class="col-form-label" for="verbose_mode">Verbose Mode</label>
+                        </div>
+                        <div id="optional_arguments" class="col">
+                            <select class="form-select" name="verbose_mode" id="verbose_mode">
+                                <option value="All" selected>All</option>
+                                <option value="Debug">Debug</option>
+                                <option value=""></option>
+                            </select>
+                        </div>
+                        <div id="optional_arguments" class="col">
+                            <label class="col-form-label" for="group_bar_chart">Group bar chart</label>
+                        </div>
+                        <div id="optional_arguments" class="col">
+                            <select class="form-select" name="group_bar_chart" id="group_bar_chart">
+                                <option value="False" selected>False</option>
+                                <option value="True">True</option>
+                            </select>
+                        </div>
+                        <div id="optional_arguments" class="col">
+                            <label class="col-form-label" for="report_cross_mapped">Report Cross Mapped</label>
+                        </div>
+                        <div id="optional_arguments" class="col">
+                            <select  class="form-select" name="report_cross_mapped" id="report_cross_mapped">
+                                <option value="False" selected>False</option>
+                                <option value="True">True</option>
+                            </select>
+                        </div>
+                        <div id="optional_arguments" class="col">
+                            <label class="col-form-label" for="mapper_template_path">Mapper Template Path</label>
+                        </div>
+                        <div id="optional_arguments" class="col">
+                            <input class="form-control" type="text" name="mapper_template_path" id="mapper_template_path">
+                        </div>
+                        <div id="optional_arguments" class="col">
+                            <label class="col-form-label" for="min_seed_length">Minimum Seed length</label>
+                        </div>
+                        <div id="optional_arguments" class="col">
+                            <input class="form-control" type="number" name="min_seed_length" id="min_seed_length" value="19">
+                        </div>
+                        <div id="optional_arguments" class="col">
+                            <label class="col-form-label" for="matching_score">Matching score</label>
+                        </div>
+                        <div id="optional_arguments" class="col">
+                            <input class="form-control" type="number" id="matching_score" name="matching_score" value="1">
+                        </div>
+                        <div id="optional_arguments" class="col">
+                            <label class="col-form-label" for="mismatch_penalty">Mismatch penalty</label>
+                        </div>
+                        <div id="optional_arguments" class="col">
+                            <input class="form-control" type="number" id="mismatch_penalty" name="mismatch_penalty" value="4">
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </div>
+    <div>
+        <div class="mt-3 container text-center">
+            <div class="row g-3 row-cols-2">
+                <button type="submit" class="btn btn-outline-secondary btn-sm" onclick="sendDna_v2()">Proceed</button>
+            </div>
+        </div>
+        </form>
+    </div>
+</body>
+
+</html>

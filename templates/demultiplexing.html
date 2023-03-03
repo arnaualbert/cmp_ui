@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/bootstrap.min.css">
+    <script src="../static/bootstrap.bundle.min.js"></script>
+    <script src="../static/Demultiplex.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN"
+        crossorigin="anonymous"></script>
+    <script src="../static/indexdemultiplexing.js"></script>
+    <title>Demultiplex</title>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Demultiplex</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <br><br>
+    <div id="forms">
+        <form id="form_demultiplex" action="/demultiplexing" method="post" enctype="multipart/form-data">
+            <div class="container text-center">
+                <div class="row g-3 row-cols-4">
+                    <div class="col">
+                        <label for="fasta0" class="col-form-label">FASTQ 1 FWD</label>
+                    </div>
+                    <div class="col">
+                        <input type="file" id="fasta0" name="fastas_fwd"  class="form-control">
+                    </div>
+                    <div class="col">
+                        <label for="fasta1" class="col-form-label">FASTQ 2 RV</label>
+                    </div>
+                    <div class="col">
+                        <input type="file" id="fasta1" name="fastas_rv" class="form-control">
+                    </div>
+                    <div class="col">
+                        <label for="output_dir" class="col-form-label">Output Directory</label>
+                    </div>
+                    <div class="col">
+                        <input type="text" id="output_dir" name="output_dir" class="form-control">
+                    </div>
+                    <div class="col">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.location.href='/demultiplexing_batch'">Batch Mode</button>
+                    </div>
+                    <div class="col">
+                        <p id="isactivated">Batch mode deactivated</p>
+                    </div>
+                </div>
+                <hr class="border border-secondary border-2 opacity-75">
+                <div id="references_organisms">
+                    <div id="reference_organism" class=" mt-1 row g-3 row-cols-5">
+                        <div class="col">
+                            <label for="ref_genome" class="col-form-label">Reference Genome</label>
+                        </div>
+                        <div class="col">
+                            <input type="text" id="ref_genome" name="ref_genome" class="form-control">
+                        </div>
+                        <div class="col">
+                            <label for="organism_name" class="col-form-label">Organism Name</label>
+                        </div>
+                        <div class="col">
+                            <input type="text" id="organism_name" name="organism_name" class="form-control">
+                        </div>
+                        <div class="col">
+                            <button type="button" class="btn btn-outline-secondary btn-sm"
+                                onclick="addFormReferenceOrganism()">+</button>
+                        </div>
+                    </div>
+                </div>
+                <hr class="border border-secondary border-2 opacity-75">
+                <div class="mt-5 row g-3 row-cols-4">
+                    <div class="col">
+                        <button type="button" class="btn btn-outline-secondary" onclick="showHide();">Optional
+                            arguements</button>
+                    </div>
+                    <div class="col">
+                        <p> </p>
+                    </div>
+                    <div id="optional_arguments" class="col">
+                        <label for="num_of_threads" class="col-form-label">Number of threads</label>
+                    </div>
+                    <div id="optional_arguments" class="col">
+                        <input type="number" id="num_of_threads" name="num_of_threads" class="form-control" value="16">
+                    </div>
+                    <div id="optional_arguments" class="col">
+                        <label for="reads_per_chunk" class="col-form-label">Reads per chunk</label>
+                    </div>
+                    <div id="optional_arguments" class="col">
+                        <input type="number" id="reads_per_chunk" name="reads_per_chunk" class="form-control">
+                    </div>
+                    <div id="optional_arguments" class="col">
+                        <label for="replace" class="col-form-label">Replace</label>
+                    </div>
+                    <div id="optional_arguments" class="col">
+                        <input type="file" id="replace" name="replace" class="form-control">
+                    </div>
+                    <div id="optional_arguments" class="col">
+                        <label for="skip_removing_tmp_files" class="col-form-label">Skip Removing tmp files</label>
+                    </div>
+                    <div id="optional_arguments" class="col">
+                        <select class="form-select" id="skip_removing_tmp_files" name="skip_removing_tmp_files">
+                            <option value="True">True</option>
+                            <option value="False">False</option>
+                        </select>
+                    </div>
+                    <div id="optional_arguments" class="col">
+                        <label for="wit_db" class="col-form-label">Wit database</label>
+                    </div>
+                    <div id="optional_arguments" class="col">
+                        <input type="text" id="wit_db" name="wit_db" class="form-control">
+                    </div>
+                </div>
+            </div>
+            <br><br>
+    </div>
+    <br>
+    <div>
+        <div class="container text-center">
+            <div class="row g-3 row-cols-2">
+                <button type="submit" id="proceed_demultiplexing" class="btn btn-outline-secondary btn-sm"
+                    onclick="sendDemultiplexing()">Proceed</button>
+            </div>
+        </div>
+        </form>
+    </div>
+</body>
+
+</html>
