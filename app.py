@@ -121,7 +121,8 @@ def demultiplexing_batch():
                 # print(secure_filename(f.filename))
                 # reg = r'\w+\/?\w+R1\.\w*\.\w+' 
                 # reg = r'/R1\./' 
-                reg = r'.*R1.*' 
+                # reg = r'.*R1.*' *R1.*|.*r1.*
+                reg = r'.*R1.*|.*r1.*'
                 compiled_reg = re.compile(reg)
                 if compiled_reg.match(f.filename):
                     # print(f'fwd = {f.filename}')
@@ -135,7 +136,8 @@ def demultiplexing_batch():
                 filename = secure_filename(f.filename)
                 # print(f.filename)
                 # reg = r'\w+\/?\w+R2\.\w*\.\w+'
-                reg = r'.*R2.*' 
+                # reg = r'.*R2.*' 
+                reg = r'.*R2.*|.*r2.*'
                 compiled_reg = re.compile(reg)
                 if compiled_reg.match(f.filename):
                     fastas_rv_ls.append(os.path.join(f.filename))
