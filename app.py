@@ -62,8 +62,14 @@ def demultiplexing():
         fastas_rv_ls = []
         for f in fastas_rv:
             if f and allowed_file(f.filename):
+                file = f
                 filename = secure_filename(f.filename)
+                print('---------------------------------')
                 print(f.filename)
+                print(f.headers)
+                print(f.name)
+                print(f.stream)
+                print('---------------------------------')
                 fastas_rv_ls.append(os.path.join(filename))
         output_dir = request.form['output_dir']
         # ref_genome = request.form.getlist('ref_genome')
@@ -111,18 +117,25 @@ def demultiplexing_batch():
         for f in fastas_fwd:
             if f and allowed_file(f.filename):
                 print(f.filename)
-                print(secure_filename(f.filename))
-                reg = r'\w+\/?\w+R1\.\w*\.\w+'
+                # print(f'fwd = {f.filename}')
+                # print(secure_filename(f.filename))
+                # reg = r'\w+\/?\w+R1\.\w*\.\w+' 
+                # reg = r'/R1\./' 
+                reg = r'.*R1.*' 
                 compiled_reg = re.compile(reg)
                 if compiled_reg.match(f.filename):
+                    # print(f'fwd = {f.filename}')
                     fastas_fwd_ls.append(os.path.join(f.filename))
+                # else:
+                    # print(f'declined = {f.filename}')
         fastas_rv = request.files.getlist("fastas")
         fastas_rv_ls = []
         for f in fastas_rv:
             if f and allowed_file(f.filename):
                 filename = secure_filename(f.filename)
-                print(f.filename)
-                reg = r'\w+\/?\w+R2\.\w*\.\w+'
+                # print(f.filename)
+                # reg = r'\w+\/?\w+R2\.\w*\.\w+'
+                reg = r'.*R2.*' 
                 compiled_reg = re.compile(reg)
                 if compiled_reg.match(f.filename):
                     fastas_rv_ls.append(os.path.join(f.filename))
@@ -145,7 +158,6 @@ def demultiplexing_batch():
         # params = {"fastas_fwd":fastas_fwd_ls,"fastas_rv":fastas_rv_ls,"output_dir":output_dir,"ref_genome":ref_genome,"organism_name":organism_name,"num_of_threads":num_of_threads,"reads_per_chunk":reads_per_chunk,"skip_removing_tmp_files":skip_removing_tmp_files,"wit_db":wit_db}
         params = {"split_pooledSeqWGS_parallel.py --fastq1":fastas_fwd_ls,"--fastq2":fastas_rv_ls,"--outdir":output_dir,"--refGenomes":ref_genome,"--sampleNames":organism_name,"--trheads":num_of_threads,"--nreads_per_chunk":reads_per_chunk,"--skip_removing_tmp_files":skip_removing_tmp_files,"--wit_db":wit_db}
         print(params)
-        print(type(params))
         #for rout in fastas_fwd_ls:
         fastas_fs_ls_string = " ".join(fastas_fwd_ls)
         fastas_rv_ls_string = " ".join(fastas_rv_ls)
@@ -153,11 +165,26 @@ def demultiplexing_batch():
         ref_genome_string = " ".join(ref_genome_ls)
         organism_name_string = " ".join(organism_name)
         rpl_ls_str = " ".join(rpl_ls)
-        command = f'split_pooledSeqWGS_parallel.py --fastq1 {fastas_fs_ls_string} --fastq2 {fastas_rv_ls_string} --outdir {output_dir} --refGenomes {ref_genome_string} --sampleNames {organism_name_string} --trheads {num_of_threads} --nreads_per_chunk {reads_per_chunk} --replace {rpl_ls_str} --skip_removing_tmp_files {skip_removing_tmp_files} --wit_db {wit_db}'
-        print(command)
-        print(type(command))
-        data = {'command':command}
-        return render_template('command.html',data=data)
+        # command = f'split_pooledSeqWGS_parallel.py --fastq1 {fastas_fs_ls_string} --fastq2 {fastas_rv_ls_string} --outdir {output_dir} --refGenomes {ref_genome_string} --sampleNames {organism_name_string} --trheads {num_of_threads} --nreads_per_chunk {reads_per_chunk} --replace {rpl_ls_str} --skip_removing_tmp_files {skip_removing_tmp_files} --wit_db {wit_db}'
+        # print(command)
+        # print(type(command))
+        commands = []
+        print(len(fastas_fwd))
+        ls_fwd = fastas_fwd_ls
+        sort_ls_fwd = sorted(fastas_fwd_ls)
+        sort_ls_rv = sorted(fastas_rv_ls)
+        print(fastas_fwd_ls)
+        print(ls_fwd)
+        print(len(ls_fwd))
+        i = 0
+        while i < len(ls_fwd):
+            command = f'split_pooledSeqWGS_parallel.py --fastq1 {sort_ls_fwd[i]} --fastq2 {sort_ls_rv[i]} --outdir {output_dir} --refGenomes {ref_genome_string} --sampleNames {organism_name_string} --trheads {num_of_threads} --nreads_per_chunk {reads_per_chunk} --replace {rpl_ls_str} --skip_removing_tmp_files {skip_removing_tmp_files} --wit_db {wit_db}'
+            commands.append(command)
+            i += 1
+        # commands_str = " ".join(commands) 
+        data = {'command':commands}
+        # return render_template('command.html',data=data)
+        return render_template('commands.html',data=data)
     return render_template('demultiplexing_batch.html')
 
 
