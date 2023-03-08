@@ -126,7 +126,13 @@ def demultiplexing_batch():
                 compiled_reg = re.compile(reg)
                 if compiled_reg.match(f.filename):
                     fastas_rv_ls.append(os.path.join(f.filename))
-        ref_genome = request.form.getlist('ref_genome')
+        # ref_genome = request.form.getlist('ref_genome')
+        ref_genome = request.files.getlist('ref_genome')
+        ref_genome_ls = []
+        for f in ref_genome:
+            filename = secure_filename(f.filename)
+            ref_genome_ls.append(os.path.join(filename))         
+
         organism_name = request.form.getlist('organism_name')
         num_of_threads = request.form['num_of_threads']
         reads_per_chunk = request.form['reads_per_chunk']
@@ -143,7 +149,8 @@ def demultiplexing_batch():
         #for rout in fastas_fwd_ls:
         fastas_fs_ls_string = " ".join(fastas_fwd_ls)
         fastas_rv_ls_string = " ".join(fastas_rv_ls)
-        ref_genome_string = " ".join(ref_genome)
+        # ref_genome_string = " ".join(ref_genome)
+        ref_genome_string = " ".join(ref_genome_ls)
         organism_name_string = " ".join(organism_name)
         rpl_ls_str = " ".join(rpl_ls)
         command = f'split_pooledSeqWGS_parallel.py --fastq1 {fastas_fs_ls_string} --fastq2 {fastas_rv_ls_string} --outdir {output_dir} --refGenomes {ref_genome_string} --sampleNames {organism_name_string} --trheads {num_of_threads} --nreads_per_chunk {reads_per_chunk} --replace {rpl_ls_str} --skip_removing_tmp_files {skip_removing_tmp_files} --wit_db {wit_db}'
