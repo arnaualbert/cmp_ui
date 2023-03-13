@@ -71,8 +71,26 @@
                     </div>
                 </div>
                 <hr class="border border-secondary border-2 opacity-75">
+                <div id="paths">
+                    <div id="path_question" class=" mt-1 row g-3 row-cols-5">
+                        <div class="col">
+                            <p>Is the same path for all the reference genome?</p>
+                        </div>
+                        <div class="col form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch" id="getoption" onclick="pathquestion()" checked>
+                            <p id="yes">Yes</p>
+                            <p id="no" style="display:none">No</p>
+                        </div>
+                        <div class="col" id="yespath">
+                            <label for="path_file" class="col-form-label">Files Path</label>
+                        </div>
+                        <div class="col" id="yespath">
+                            <input type="text" id="path_file_unique" class="form-control">
+                        </div>
+                    </div>
+                </div>
                 <div id="references_organisms">
-                    <div id="reference_organism" class=" mt-1 row g-3 row-cols-5">
+                    <div id="reference_organism" class=" mt-1 row g-3 row-cols-7">
                         <div class="col">
                             <label for="ref_genome" class="col-form-label">Reference Genome</label>
                         </div>
@@ -84,6 +102,12 @@
                         </div>
                         <div class="col">
                             <input type="text" id="organism_name" name="organism_name" class="form-control">
+                        </div>
+                        <div class="col" id="nopath"  style="display:none">
+                            <label for="path_file" class="col-form-label">Files Path</label>
+                        </div>
+                        <div class="col" id="nopath" style="display:none">
+                            <input type="text" id="path_files" class="form-control" >
                         </div>
                         <div class="col">
                             <button type="button" class="btn btn-outline-secondary btn-sm"

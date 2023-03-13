@@ -101,7 +101,37 @@ function batchmode() {
 
 }
 
-
+function pathquestion() {
+    var getoption = document.getElementById("getoption");
+    // var option_path = document.getElementById("option_path");
+    var yes = document.getElementById("yes");
+    var no = document.getElementById("no");
+    var yespath = document.querySelectorAll("#yespath");
+    var nopath = document.querySelectorAll("#nopath");
+    if (getoption.checked == true) {
+        no.style.display = "none";
+        yes.style.display = "block";
+        for (let i = 0; i < yespath.length; i++) {
+            yespath[i].style.display = "block";
+        }
+        for (let i = 0; i < nopath.length; i++) {
+            nopath[i].style.display = "none";
+        }
+        // yespath.style.display = "block";
+        console.log("yes")
+    } else {
+        no.style.display = "block";
+        yes.style.display = "none";
+        for (let i = 0; i < yespath.length; i++) {
+            yespath[i].style.display = "none";
+        }
+        for (let i = 0; i < nopath.length; i++) {
+            nopath[i].style.display = "block";
+        }
+        // yespath.style.display = "none"
+        console.log("no")
+    }
+}
 
 
 // get all the parameters and create the Demultiplex object , then add it to the array
