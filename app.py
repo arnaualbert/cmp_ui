@@ -7,6 +7,8 @@ import os
 import shutil
 from pathlib import Path
 import re
+import paramiko
+
 
 module_name = __name__
 app = Flask(__name__)
@@ -14,6 +16,11 @@ app = Flask(__name__)
 # Get current path
 path = os.getcwd()
 print(path)
+
+#ssh part
+HOST = '**************************'
+USERNAME = '*********************'
+PASSWORD = '*********************'
 
 # file Upload
 DEMULTIPLEXING_FOLDER = os.path.join(path, 'demultiplexing')
@@ -133,6 +140,15 @@ def demultiplexing():
         print(type(command))
         data = {'command':command}
         print(f'ip = {request.remote_addr}')
+        ####new paramiko test###########
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(hostname=HOST, username=USERNAME, password=PASSWORD)
+        stdin, stdout, stderr = ssh.exec_command(f'touch comand.txt; echo {command} >> comand.txt')
+        output = stdout.readlines()
+        error = stderr.readlines()
+        ssh.close()
+        ##########################################
         return render_template('command.html',data=data)
     return render_template('demultiplexing.html')
 
@@ -194,7 +210,7 @@ def demultiplexing_batch():
                 listoffiles.append(filename)
             for path,file in zip(path_files,listoffiles):
                 ref_genome_ls.append(os.path.join(path,filename))
-                
+
         # ref_genome = request.files.getlist('ref_genome')
         # ref_genome_ls = []
         # for f in ref_genome:
