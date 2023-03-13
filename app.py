@@ -122,6 +122,7 @@ def demultiplexing_batch():
         output_dir = request.form['output_dir']
         fastas_fwd = request.files.getlist("fastas")
         fastas_fwd_ls = []
+        file_path = request.form['path_file']
         # for f in fastas_fwd:
         for f in fastas_fwd:
             if f and allowed_file(f.filename):
@@ -135,7 +136,7 @@ def demultiplexing_batch():
                 compiled_reg = re.compile(reg)
                 if compiled_reg.match(f.filename):
                     # print(f'fwd = {f.filename}')
-                    fastas_fwd_ls.append(os.path.join(f.filename))
+                    fastas_fwd_ls.append(os.path.join(file_path,f.filename))
                 # else:
                     # print(f'declined = {f.filename}')
         fastas_rv = request.files.getlist("fastas")
@@ -149,7 +150,7 @@ def demultiplexing_batch():
                 reg = r'.*R2.*|.*r2.*'
                 compiled_reg = re.compile(reg)
                 if compiled_reg.match(f.filename):
-                    fastas_rv_ls.append(os.path.join(f.filename))
+                    fastas_rv_ls.append(os.path.join(file_path,f.filename))
         # ref_genome = request.form.getlist('ref_genome')
         ref_genome = request.files.getlist('ref_genome')
         ref_genome_ls = []
