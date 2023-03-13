@@ -14,6 +14,7 @@ app = Flask(__name__)
 # Get current path
 path = os.getcwd()
 print(path)
+
 # file Upload
 DEMULTIPLEXING_FOLDER = os.path.join(path, 'demultiplexing')
 FWD_FOLDER = os.path.join(path, 'demultiplexing/fwd')
@@ -52,12 +53,14 @@ def demultiplexing():
 
         fastas_fwd = request.files.getlist("fastas_fwd")
         fastas_fwd_ls = []
+        file_path = request.form['path_file']
         for f in fastas_fwd:
             if f and allowed_file(f.filename):         
                 print(f.filename)
                 print(secure_filename(f.filename))
                 filename = secure_filename(f.filename)
-                fastas_fwd_ls.append(os.path.join(filename))
+                # fastas_fwd_ls.append(os.path.join(filename))
+                fastas_fwd_ls.append(os.path.join(file_path,filename))
         fastas_rv = request.files.getlist("fastas_rv")
         fastas_rv_ls = []
         for f in fastas_rv:
@@ -65,13 +68,17 @@ def demultiplexing():
                 file = f
                 filename = secure_filename(f.filename)
                 print('---------------------------------')
-                print(f.filename)
-                print(f.headers)
-                print(f.name)
-                print(f.stream)
+                print(f'filenname = {f.filename}')
+                print(f'headers = {f.headers}')
+                print(f'name = {f.name}')
+                print(f'stream = {f.stream}')
+                print(f'filename = {filename}')
+                print(f'file = {file}')
                 print('---------------------------------')
-                fastas_rv_ls.append(os.path.join(filename))
+                # fastas_rv_ls.append(os.path.join(filename))
+                fastas_rv_ls.append(os.path.join(file_path,filename))
         output_dir = request.form['output_dir']
+        # file_path = request.form['file_path']
         # ref_genome = request.form.getlist('ref_genome')
         ###################################################################
         ref_genome = request.files.getlist('ref_genome')
@@ -104,6 +111,7 @@ def demultiplexing():
         print(command)
         print(type(command))
         data = {'command':command}
+        print(f'ip = {request.remote_addr}')
         return render_template('command.html',data=data)
     return render_template('demultiplexing.html')
 
@@ -114,6 +122,7 @@ def demultiplexing_batch():
         output_dir = request.form['output_dir']
         fastas_fwd = request.files.getlist("fastas")
         fastas_fwd_ls = []
+        # for f in fastas_fwd:
         for f in fastas_fwd:
             if f and allowed_file(f.filename):
                 print(f.filename)
