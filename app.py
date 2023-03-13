@@ -82,7 +82,6 @@ def demultiplexing():
         ###################################################################
         getoption = request.form.get('getoption')
         if getoption == 'on':
-            print("on")
             ref_genome = request.files.getlist('ref_genome')
             path_file_unique = request.form['path_file_unique']
             ref_genome_ls = []
@@ -90,7 +89,6 @@ def demultiplexing():
                 filename = secure_filename(f.filename)
                 ref_genome_ls.append(os.path.join(path_file_unique,filename))   
         else:
-            print("off")
             ref_genome = request.files.getlist('ref_genome')
             path_files = request.form.getlist('path_files')
             print(path_files)
