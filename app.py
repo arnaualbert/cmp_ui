@@ -50,7 +50,6 @@ def demultiplexing():
         It takes all the parameters from the html form.
     '''
     if request.method == 'POST':
-
         fastas_fwd = request.files.getlist("fastas_fwd")
         fastas_fwd_ls = []
         file_path = request.form['path_file']
@@ -81,11 +80,35 @@ def demultiplexing():
         # file_path = request.form['file_path']
         # ref_genome = request.form.getlist('ref_genome')
         ###################################################################
-        ref_genome = request.files.getlist('ref_genome')
-        ref_genome_ls = []
-        for f in ref_genome:
-            filename = secure_filename(f.filename)
-            ref_genome_ls.append(os.path.join(filename))         
+        getoption = request.form.get('getoption')
+        if getoption == 'on':
+            print("on")
+            ref_genome = request.files.getlist('ref_genome')
+            path_file_unique = request.form['path_file_unique']
+            ref_genome_ls = []
+            for f in ref_genome:
+                filename = secure_filename(f.filename)
+                ref_genome_ls.append(os.path.join(path_file_unique,filename))   
+        else:
+            print("off")
+            ref_genome = request.files.getlist('ref_genome')
+            path_files = request.form.getlist('path_files')
+            print(path_files)
+            ref_genome_ls = []
+            listoffiles = []
+            for f in ref_genome:
+                filename = secure_filename(f.filename)
+                print(filename)
+                listoffiles.append(filename)
+            for path,file in zip(path_files,listoffiles):
+                ref_genome_ls.append(os.path.join(path,filename))
+
+
+        # ref_genome = request.files.getlist('ref_genome')
+        # ref_genome_ls = []
+        # for f in ref_genome:
+        #     filename = secure_filename(f.filename)
+        #     ref_genome_ls.append(os.path.join(filename))         
         ##################################################################    
         organism_name = request.form.getlist('organism_name')
         num_of_threads = request.form['num_of_threads']
