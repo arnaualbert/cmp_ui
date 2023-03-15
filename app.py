@@ -254,6 +254,24 @@ def demultiplexing_batch():
             i += 1
         # commands_str = " ".join(commands) 
         data = {'command':commands}
+
+
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(hostname=HOST, username=USERNAME, password=PASSWORD)
+        # stdin, stdout, stderr = ssh.exec_command(f'touch demultiplexing.txt; echo {command} >> demultiplexing.txt')
+        stdin, stdout, stderr = ssh.exec_command(f'touch demultiplexingbatch.txt')
+        stdin, stdout, stderr = ssh.exec_command(f'echo '' > demultiplexingbatch.txt')           
+        for com in commands:
+            # stdin, stdout, stderr = ssh.exec_command(f'echo {com} >> demultiplexingbatch.txt')     
+            # stdin, stdout, stderr = ssh.exec_command(f'echo '' > demultiplexingbatch.txt')           
+            stdin, stdout, stderr = ssh.exec_command(f'echo {com} >> demultiplexingbatch.txt')        
+        output = stdout.readlines()
+        error = stderr.readlines()
+        ssh.close()
+
+        # for com in commands:
+
         # return render_template('command.html',data=data)
         return render_template('commands.html',data=data)
     return render_template('demultiplexing_batch.html')
