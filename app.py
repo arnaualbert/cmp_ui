@@ -18,9 +18,9 @@ path = os.getcwd()
 print(path)
 
 #ssh part
-HOST = '**************************'
-USERNAME = '*********************'
-PASSWORD = '*********************'
+HOST = '************'
+USERNAME = '************'
+PASSWORD = '************'
 
 # file Upload
 DEMULTIPLEXING_FOLDER = os.path.join(path, 'demultiplexing')
@@ -144,7 +144,7 @@ def demultiplexing():
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(hostname=HOST, username=USERNAME, password=PASSWORD)
-        stdin, stdout, stderr = ssh.exec_command(f'touch demultiplexing.txt; echo {command} >> comand.txt')
+        stdin, stdout, stderr = ssh.exec_command(f'touch demultiplexing.txt; echo {command} >> demultiplexing.txt')
         output = stdout.readlines()
         error = stderr.readlines()
         ssh.close()
@@ -311,7 +311,7 @@ def crossmaperdna():
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(hostname=HOST, username=USERNAME, password=PASSWORD)
-        stdin, stdout, stderr = ssh.exec_command(f'touch crossmapperdna.txt; echo {command} >> comand.txt')
+        stdin, stdout, stderr = ssh.exec_command(f'touch crossmapperdna.txt; echo {command} >> crossmapperdna.txt')
         output = stdout.readlines()
         error = stderr.readlines()
         ssh.close()
@@ -365,7 +365,7 @@ def crossmaperrna():
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(hostname=HOST, username=USERNAME, password=PASSWORD)
-        stdin, stdout, stderr = ssh.exec_command(f'touch crossmapperrna.txt; echo {command} >> comand.txt')
+        stdin, stdout, stderr = ssh.exec_command(f'touch crossmapperrna.txt; echo {command} >> crossmapperrna.txt')
         output = stdout.readlines()
         error = stderr.readlines()
         ssh.close()
