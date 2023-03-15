@@ -334,7 +334,11 @@ def crossmaperrna():
         number_of_reads = request.form.getlist('number_of_reads')
         read_length = request.form.getlist('read_length')
         read_configuration = request.form['read_configuration']
-        annotations_gtf = request.form.getlist('annotations_gtf')
+        # annotations_gtf = request.form.getlist('annotations_gtf')
+        annotations_gtf = request.files.getlist('annotations_gtf')
+        annotations_gtf_ls = []
+        for f in annotations_gtf:
+            annotations_gtf_ls.append(f.filename)
         number_of_cores = request.form['number_of_cores']
         base_error_rate = request.form['base_error_rate']
         oouter_distance = request.form['outer_distance']
@@ -359,7 +363,8 @@ def crossmaperrna():
         genome_name_string = " ".join(genome_name)
         number_of_reads_string = " ".join(number_of_reads)
         read_length_string = ",".join(read_length)
-        annotations_gtf_ls_str = " ".join(annotations_gtf)
+        # annotations_gtf_ls_str = " ".join(annotations_gtf)
+        annotations_gtf_ls_str = " ".join(annotations_gtf_ls)
         command = f"crossmapper RNA -g {fastq_ls_string} -gn {genome_name_string} -rlen {read_length_string} -rlay {read_configuration} -N {number_of_reads_string} -a {annotations_gtf_ls_str} -t {number_of_cores} -e {base_error_rate} -d {oouter_distance} -s {standar_deviation} -C {coverage} -r {mutation_rate} -R {indel_fraction} -X {indel_extended} -S {seed_random_generator} -AMB {discard_ambiguos} -hapl {haplotype_mode} -o {output_directory} --verbose {verbose_mode} -gb {group_bar_chart} -rc {report_cross_mapped} --mapper-template {mapper_template_path} -max_mismatch_per_len {max_mismatch_per_len} -bact_mode {bact_mode} -max_mismatch {max_mismatch} -star_tmp {star_tmp}"
         ####new paramiko test###########
         ssh = paramiko.SSHClient()
