@@ -12,11 +12,6 @@ app = Flask(__name__)
 path = os.getcwd()
 print(path)
 
-#ssh part
-HOST = '************'
-USERNAME = '************'
-PASSWORD = '************'
-
 # file Upload
 DEMULTIPLEXING_FOLDER = os.path.join(path, 'demultiplexing')
 FWD_FOLDER = os.path.join(path, 'demultiplexing/fwd')
@@ -38,9 +33,17 @@ app.config['DEMULTIPLEXING_RV_FOLDER'] = RV_FOLDER
 ALLOWED_EXTENSIONS = set(['*fasta.*','fastaq.gz','gz','fq.gz','*fq.*'])
 
 
-@app.route("/")
+@app.route("/",methods=['GET','POST'])
 def index():
+    if request.method == 'POST':
+        global host 
+        global username
+        global password
+        host = request.form['HOST']
+        username = request.form['USERNAME']
+        password = request.form['PASSWORD']
     return render_template('index.html')
+
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -112,7 +115,7 @@ def demultiplexing():
         print(f'ip = {request.remote_addr}')
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(hostname=HOST, username=USERNAME, password=PASSWORD)
+        ssh.connect(hostname=host, username=username, password=password)
         stdin, stdout, stderr = ssh.exec_command(f'touch demultiplexing.txt; echo {command} >> demultiplexing.txt')
         output = stdout.readlines()
         error = stderr.readlines()
@@ -194,7 +197,7 @@ def demultiplexing_batch():
         data = {'command':commands}
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(hostname=HOST, username=USERNAME, password=PASSWORD)
+        ssh.connect(hostname=host, username=username, password=password)
         stdin, stdout, stderr = ssh.exec_command(f'touch demultiplexingbatch.txt')
         stdin, stdout, stderr = ssh.exec_command(f'echo '' > demultiplexingbatch.txt')           
         for com in commands:       
@@ -256,7 +259,7 @@ def crossmaperdna():
         command = f"crossmapper DNA -g {fastq_ls_string} -gn {genome_name_string} -rlen {read_length_string} -rlay {read_configuration} -N {number_of_reads_string} -t {number_of_cores} -e {base_error_rate} -d {oouter_distance} -s {standar_deviation} -C {coverage} -r {mutation_rate} -R {indel_fraction} -X {indel_extended} -S {seed_random_generator} -AMB {discard_ambiguos} -hapl {haplotype_mode} -o {output_directory} --verbose {verbose_mode} -gb {group_bar_chart} -rc {report_cross_mapped} --mapper-template {mapper_template_path} -k {min_seed_length} -A {matching_score} -B {missmatch_penalty}"
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(hostname=HOST, username=USERNAME, password=PASSWORD)
+        ssh.connect(hostname=host, username=username, password=password)
         stdin, stdout, stderr = ssh.exec_command(f'touch crossmapperdna.txt; echo {command} >> crossmapperdna.txt')
         output = stdout.readlines()
         error = stderr.readlines()
@@ -310,7 +313,7 @@ def crossmaperrna():
         command = f"crossmapper RNA -g {fastq_ls_string} -gn {genome_name_string} -rlen {read_length_string} -rlay {read_configuration} -N {number_of_reads_string} -a {annotations_gtf_ls_str} -t {number_of_cores} -e {base_error_rate} -d {oouter_distance} -s {standar_deviation} -C {coverage} -r {mutation_rate} -R {indel_fraction} -X {indel_extended} -S {seed_random_generator} -AMB {discard_ambiguos} -hapl {haplotype_mode} -o {output_directory} --verbose {verbose_mode} -gb {group_bar_chart} -rc {report_cross_mapped} --mapper-template {mapper_template_path} -max_mismatch_per_len {max_mismatch_per_len} -bact_mode {bact_mode} -max_mismatch {max_mismatch} -star_tmp {star_tmp}"
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(hostname=HOST, username=USERNAME, password=PASSWORD)
+        ssh.connect(hostname=host, username=username, password=password)
         stdin, stdout, stderr = ssh.exec_command(f'touch crossmapperrna.txt; echo {command} >> crossmapperrna.txt')
         output = stdout.readlines()
         error = stderr.readlines()
