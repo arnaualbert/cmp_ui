@@ -1,11 +1,6 @@
-import json
-from webbrowser import get
-from flask import Flask, render_template, request,flash,redirect,url_for,Response, send_file
-import random
+from flask import Flask, render_template, request
 from werkzeug.utils import secure_filename
 import os
-import shutil
-from pathlib import Path
 import re
 import paramiko
 
@@ -65,28 +60,14 @@ def demultiplexing():
                 print(f.filename)
                 print(secure_filename(f.filename))
                 filename = secure_filename(f.filename)
-                # fastas_fwd_ls.append(os.path.join(filename))
                 fastas_fwd_ls.append(os.path.join(file_path,filename))
         fastas_rv = request.files.getlist("fastas_rv")
         fastas_rv_ls = []
         for f in fastas_rv:
             if f and allowed_file(f.filename):
-                file = f
                 filename = secure_filename(f.filename)
-                print('---------------------------------')
-                print(f'filenname = {f.filename}')
-                print(f'headers = {f.headers}')
-                print(f'name = {f.name}')
-                print(f'stream = {f.stream}')
-                print(f'filename = {filename}')
-                print(f'file = {file}')
-                print('---------------------------------')
-                # fastas_rv_ls.append(os.path.join(filename))
                 fastas_rv_ls.append(os.path.join(file_path,filename))
         output_dir = request.form['output_dir']
-        # file_path = request.form['file_path']
-        # ref_genome = request.form.getlist('ref_genome')
-        ###################################################################
         getoption = request.form.get('getoption')
         if getoption == 'on':
             ref_genome = request.files.getlist('ref_genome')
@@ -106,32 +87,21 @@ def demultiplexing():
                 print(filename)
                 listoffiles.append(filename)
             for path,file in zip(path_files,listoffiles):
-                ref_genome_ls.append(os.path.join(path,filename))
-
-
-        # ref_genome = request.files.getlist('ref_genome')
-        # ref_genome_ls = []
-        # for f in ref_genome:
-        #     filename = secure_filename(f.filename)
-        #     ref_genome_ls.append(os.path.join(filename))         
-        ##################################################################    
+                ref_genome_ls.append(os.path.join(path,filename)) 
         organism_name = request.form.getlist('organism_name')
         num_of_threads = request.form['num_of_threads']
         reads_per_chunk = request.form['reads_per_chunk']
-        # replace = request.files['replace']
         replace = request.files.getlist('replace')
         rpl_ls = []
         for f in replace:
             rpl_ls.append(f.filename)
         skip_removing_tmp_files = request.form['skip_removing_tmp_files']
         wit_db = request.form['wit_db']
-        # params = {"fastas_fwd":fastas_fwd_ls,"fastas_rv":fastas_rv_ls,"output_dir":output_dir,"ref_genome":ref_genome,"organism_name":organism_name,"num_of_threads":num_of_threads,"reads_per_chunk":reads_per_chunk,"skip_removing_tmp_files":skip_removing_tmp_files,"wit_db":wit_db}
         params = {"--fastq1":fastas_fwd_ls,"--fastq2":fastas_rv_ls,"--outdir":output_dir,"--refGenomes":ref_genome,"--sampleNames":organism_name,"--trheads":num_of_threads,"--nreads_per_chunk":reads_per_chunk,"--skip_removing_tmp_files":skip_removing_tmp_files,"--wit_db":wit_db}
         print(params)
         print(type(params))
         fastas_fs_ls_string = " ".join(fastas_fwd_ls)
         fastas_rv_ls_string = " ".join(fastas_rv_ls)
-        # ref_genome_string = " ".join(ref_genome)
         ref_genome_string = " ".join(ref_genome_ls)
         organism_name_string = " ".join(organism_name)
         rpl_ls_str = " ".join(rpl_ls)
@@ -140,7 +110,6 @@ def demultiplexing():
         print(type(command))
         data = {'command':command}
         print(f'ip = {request.remote_addr}')
-        ####new paramiko test###########
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(hostname=HOST, username=USERNAME, password=PASSWORD)
@@ -148,7 +117,6 @@ def demultiplexing():
         output = stdout.readlines()
         error = stderr.readlines()
         ssh.close()
-        ##########################################
         return render_template('command.html',data=data)
     return render_template('demultiplexing.html')
 
@@ -160,36 +128,22 @@ def demultiplexing_batch():
         fastas_fwd = request.files.getlist("fastas")
         fastas_fwd_ls = []
         file_path = request.form['path_file']
-        # for f in fastas_fwd:
         for f in fastas_fwd:
             if f and allowed_file(f.filename):
                 print(f.filename)
-                # print(f'fwd = {f.filename}')
-                # print(secure_filename(f.filename))
-                # reg = r'\w+\/?\w+R1\.\w*\.\w+' 
-                # reg = r'/R1\./' 
-                # reg = r'.*R1.*' *R1.*|.*r1.*
                 reg = r'.*R1.*|.*r1.*'
                 compiled_reg = re.compile(reg)
                 if compiled_reg.match(f.filename):
-                    # print(f'fwd = {f.filename}')
                     fastas_fwd_ls.append(os.path.join(file_path,f.filename))
-                # else:
-                    # print(f'declined = {f.filename}')
         fastas_rv = request.files.getlist("fastas")
         fastas_rv_ls = []
         for f in fastas_rv:
             if f and allowed_file(f.filename):
                 filename = secure_filename(f.filename)
-                # print(f.filename)
-                # reg = r'\w+\/?\w+R2\.\w*\.\w+'
-                # reg = r'.*R2.*' 
                 reg = r'.*R2.*|.*r2.*'
                 compiled_reg = re.compile(reg)
                 if compiled_reg.match(f.filename):
                     fastas_rv_ls.append(os.path.join(file_path,f.filename))
-        # ref_genome = request.form.getlist('ref_genome')
-        ###################################################################
         getoption = request.form.get('getoption')
         if getoption == 'on':
             ref_genome = request.files.getlist('ref_genome')
@@ -210,13 +164,6 @@ def demultiplexing_batch():
                 listoffiles.append(filename)
             for path,file in zip(path_files,listoffiles):
                 ref_genome_ls.append(os.path.join(path,filename))
-
-        # ref_genome = request.files.getlist('ref_genome')
-        # ref_genome_ls = []
-        # for f in ref_genome:
-        #     filename = secure_filename(f.filename)
-        #     ref_genome_ls.append(os.path.join(filename))         
-        ###################################################################
         organism_name = request.form.getlist('organism_name')
         num_of_threads = request.form['num_of_threads']
         reads_per_chunk = request.form['reads_per_chunk']
@@ -226,19 +173,11 @@ def demultiplexing_batch():
             rpl_ls.append(f.filename)
         skip_removing_tmp_files = request.form['skip_removing_tmp_files']
         wit_db = request.form['wit_db']
-        # params = {"fastas_fwd":fastas_fwd_ls,"fastas_rv":fastas_rv_ls,"output_dir":output_dir,"ref_genome":ref_genome,"organism_name":organism_name,"num_of_threads":num_of_threads,"reads_per_chunk":reads_per_chunk,"skip_removing_tmp_files":skip_removing_tmp_files,"wit_db":wit_db}
         params = {"split_pooledSeqWGS_parallel.py --fastq1":fastas_fwd_ls,"--fastq2":fastas_rv_ls,"--outdir":output_dir,"--refGenomes":ref_genome,"--sampleNames":organism_name,"--trheads":num_of_threads,"--nreads_per_chunk":reads_per_chunk,"--skip_removing_tmp_files":skip_removing_tmp_files,"--wit_db":wit_db}
         print(params)
-        #for rout in fastas_fwd_ls:
-        fastas_fs_ls_string = " ".join(fastas_fwd_ls)
-        fastas_rv_ls_string = " ".join(fastas_rv_ls)
-        # ref_genome_string = " ".join(ref_genome)
         ref_genome_string = " ".join(ref_genome_ls)
         organism_name_string = " ".join(organism_name)
         rpl_ls_str = " ".join(rpl_ls)
-        # command = f'split_pooledSeqWGS_parallel.py --fastq1 {fastas_fs_ls_string} --fastq2 {fastas_rv_ls_string} --outdir {output_dir} --refGenomes {ref_genome_string} --sampleNames {organism_name_string} --trheads {num_of_threads} --nreads_per_chunk {reads_per_chunk} --replace {rpl_ls_str} --skip_removing_tmp_files {skip_removing_tmp_files} --wit_db {wit_db}'
-        # print(command)
-        # print(type(command))
         commands = []
         print(len(fastas_fwd))
         ls_fwd = fastas_fwd_ls
@@ -252,27 +191,17 @@ def demultiplexing_batch():
             command = f'split_pooledSeqWGS_parallel.py --fastq1 {sort_ls_fwd[i]} --fastq2 {sort_ls_rv[i]} --outdir {output_dir} --refGenomes {ref_genome_string} --sampleNames {organism_name_string} --trheads {num_of_threads} --nreads_per_chunk {reads_per_chunk} --replace {rpl_ls_str} --skip_removing_tmp_files {skip_removing_tmp_files} --wit_db {wit_db}'
             commands.append(command)
             i += 1
-        # commands_str = " ".join(commands) 
         data = {'command':commands}
-
-
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(hostname=HOST, username=USERNAME, password=PASSWORD)
-        # stdin, stdout, stderr = ssh.exec_command(f'touch demultiplexing.txt; echo {command} >> demultiplexing.txt')
         stdin, stdout, stderr = ssh.exec_command(f'touch demultiplexingbatch.txt')
         stdin, stdout, stderr = ssh.exec_command(f'echo '' > demultiplexingbatch.txt')           
-        for com in commands:
-            # stdin, stdout, stderr = ssh.exec_command(f'echo {com} >> demultiplexingbatch.txt')     
-            # stdin, stdout, stderr = ssh.exec_command(f'echo '' > demultiplexingbatch.txt')           
+        for com in commands:       
             stdin, stdout, stderr = ssh.exec_command(f'echo {com} >> demultiplexingbatch.txt')        
         output = stdout.readlines()
         error = stderr.readlines()
         ssh.close()
-
-        # for com in commands:
-
-        # return render_template('command.html',data=data)
         return render_template('commands.html',data=data)
     return render_template('demultiplexing_batch.html')
 
@@ -325,7 +254,6 @@ def crossmaperdna():
         number_of_reads_string = " ".join(number_of_reads)
         read_length_string = ",".join(read_length)
         command = f"crossmapper DNA -g {fastq_ls_string} -gn {genome_name_string} -rlen {read_length_string} -rlay {read_configuration} -N {number_of_reads_string} -t {number_of_cores} -e {base_error_rate} -d {oouter_distance} -s {standar_deviation} -C {coverage} -r {mutation_rate} -R {indel_fraction} -X {indel_extended} -S {seed_random_generator} -AMB {discard_ambiguos} -hapl {haplotype_mode} -o {output_directory} --verbose {verbose_mode} -gb {group_bar_chart} -rc {report_cross_mapped} --mapper-template {mapper_template_path} -k {min_seed_length} -A {matching_score} -B {missmatch_penalty}"
-        ####new paramiko test###########
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(hostname=HOST, username=USERNAME, password=PASSWORD)
@@ -333,8 +261,6 @@ def crossmaperdna():
         output = stdout.readlines()
         error = stderr.readlines()
         ssh.close()
-        ##########################################
-
         data = {'command':command}
         return render_template('command.html',data=data)
 
@@ -352,7 +278,6 @@ def crossmaperrna():
         number_of_reads = request.form.getlist('number_of_reads')
         read_length = request.form.getlist('read_length')
         read_configuration = request.form['read_configuration']
-        # annotations_gtf = request.form.getlist('annotations_gtf')
         annotations_gtf = request.files.getlist('annotations_gtf')
         annotations_gtf_ls = []
         for f in annotations_gtf:
@@ -381,10 +306,8 @@ def crossmaperrna():
         genome_name_string = " ".join(genome_name)
         number_of_reads_string = " ".join(number_of_reads)
         read_length_string = ",".join(read_length)
-        # annotations_gtf_ls_str = " ".join(annotations_gtf)
         annotations_gtf_ls_str = " ".join(annotations_gtf_ls)
         command = f"crossmapper RNA -g {fastq_ls_string} -gn {genome_name_string} -rlen {read_length_string} -rlay {read_configuration} -N {number_of_reads_string} -a {annotations_gtf_ls_str} -t {number_of_cores} -e {base_error_rate} -d {oouter_distance} -s {standar_deviation} -C {coverage} -r {mutation_rate} -R {indel_fraction} -X {indel_extended} -S {seed_random_generator} -AMB {discard_ambiguos} -hapl {haplotype_mode} -o {output_directory} --verbose {verbose_mode} -gb {group_bar_chart} -rc {report_cross_mapped} --mapper-template {mapper_template_path} -max_mismatch_per_len {max_mismatch_per_len} -bact_mode {bact_mode} -max_mismatch {max_mismatch} -star_tmp {star_tmp}"
-        ####new paramiko test###########
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(hostname=HOST, username=USERNAME, password=PASSWORD)
@@ -392,8 +315,6 @@ def crossmaperrna():
         output = stdout.readlines()
         error = stderr.readlines()
         ssh.close()
-        ##########################################
-
         data = {'command':command}
         return render_template('command.html',data=data)
 
