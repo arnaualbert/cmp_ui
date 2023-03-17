@@ -329,10 +329,20 @@ def search_files(root_dir, extension):
                 print(os.path.join(root, file))
 
 
+def create_app():
+    return app
+
 if __name__ == "__main__":
+    from waitress import serve
+    serve(app, host='127.0.0.1', port=5000)
+    # serve(app, host='0.0.0.0', port=8080)
+
+
     # activate the source venv: source ./venv/bin/activate
     # deactivate the source venv: deactivate
     # run in debug mode: flask --app app --debug run
-    app.run(debug=True)
+    # app.run(debug=True) ### functiona
+    # app.run() ### functiona
+
     #app.run(debug=True, port=5000)
-    # app.run(host="127.0.0.1", port=8080, debug=True)
+    # app.run(host="127.0.0.1", port=8080, debug=True)docke

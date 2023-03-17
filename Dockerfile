@@ -1,14 +1,22 @@
 FROM python:3.9
 
-ENV FLASK_APP=app.py
-
+# Set working directory
 WORKDIR /app
 
-COPY requirements.txt requirements.txt
+# Copy requirements file and install dependencies
+COPY requirements.txt .
 RUN pip install -r requirements.txt
 
+# Copy application files to working directory
 COPY . .
 
-EXPOSE 5000
+# Expose ports for the container
+EXPOSE 5000 
 
-CMD ["flask", "run", "--host=0.0.0.0"]
+# Set environment variables
+ENV FLASK_APP=app.py
+ENV FLASK_ENV=production
+
+# Run the application with Waitress
+CMD waitress-serve --listen=*:5000 app:app
+
