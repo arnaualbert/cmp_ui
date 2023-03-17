@@ -15,7 +15,7 @@ EXPOSE 5000
 
 # Set environment variables
 ENV FLASK_APP=app.py
-ENV FLASK_ENV=production
+ENV FLASK_DEBUG=1
 
 # Run the application with Waitress
 CMD waitress-serve --listen=*:5000 app:app
