@@ -42,7 +42,27 @@ def index():
         host = request.form['HOST']
         username = request.form['USERNAME']
         password = request.form['PASSWORD']
+        try:
+            ssh = paramiko.SSHClient()
+            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            ssh.connect(hostname=host, username=username, password=password)
+            print("Connection Successful")
+            return render_template('index.html')
+        except paramiko.AuthenticationException:
+            print("Wrong Credentials")
+        ssh.close()
+    return render_template('sshlogin.html')
+
+
+
+
+@app.route("/home",methods=['GET','POST'])
+def home():
+    if request.method == 'POST':
+        return render_template('index.html')
     return render_template('index.html')
+
+
 
 
 def allowed_file(filename):
@@ -95,6 +115,7 @@ def demultiplexing():
         num_of_threads = request.form['num_of_threads']
         reads_per_chunk = request.form['reads_per_chunk']
         replace = request.files.getlist('replace')
+        store_com = request.form['store_com']
         rpl_ls = []
         for f in replace:
             rpl_ls.append(f.filename)
@@ -116,7 +137,7 @@ def demultiplexing():
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(hostname=host, username=username, password=password)
-        stdin, stdout, stderr = ssh.exec_command(f'touch demultiplexing.txt; echo {command} >> demultiplexing.txt')
+        stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}demultiplexing.txt; echo {command} >> {store_com}demultiplexing.txt')
         output = stdout.readlines()
         error = stderr.readlines()
         ssh.close()
@@ -171,6 +192,7 @@ def demultiplexing_batch():
         num_of_threads = request.form['num_of_threads']
         reads_per_chunk = request.form['reads_per_chunk']
         replace = request.files.getlist('replace')
+        store_com = request.form['store_com']
         rpl_ls = []
         for f in replace:
             rpl_ls.append(f.filename)
@@ -198,10 +220,10 @@ def demultiplexing_batch():
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(hostname=host, username=username, password=password)
-        stdin, stdout, stderr = ssh.exec_command(f'touch demultiplexingbatch.txt')
-        stdin, stdout, stderr = ssh.exec_command(f'echo '' > demultiplexingbatch.txt')           
+        stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}demultiplexingbatch.txt')
+        stdin, stdout, stderr = ssh.exec_command(f'echo '' > {store_com}demultiplexingbatch.txt')           
         for com in commands:       
-            stdin, stdout, stderr = ssh.exec_command(f'echo {com} >> demultiplexingbatch.txt')        
+            stdin, stdout, stderr = ssh.exec_command(f'echo {com} >> {store_com}demultiplexingbatch.txt')        
         output = stdout.readlines()
         error = stderr.readlines()
         ssh.close()
@@ -334,7 +356,7 @@ def create_app():
 
 if __name__ == "__main__":
     from waitress import serve
-    serve(app, host='127.0.0.1', port=5000)
+    serve(app, host='127.0.0.1', port=5001)
     # serve(app, host='0.0.0.0', port=8080)
 
 
