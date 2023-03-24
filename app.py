@@ -32,7 +32,7 @@ app.config['DEMULTIPLEXING_RV_FOLDER'] = RV_FOLDER
 
 ALLOWED_EXTENSIONS = set(['*fasta.*','fastaq.gz','gz','fq.gz','*fq.*'])
 
-
+# Show the ssh login page
 @app.route("/",methods=['GET','POST'])
 def index():
     if request.method == 'POST':
@@ -53,21 +53,18 @@ def index():
         ssh.close()
     return render_template('sshlogin.html')
 
-
-
-
+# Show the home page
 @app.route("/home",methods=['GET','POST'])
 def home():
     if request.method == 'POST':
         return render_template('index.html')
     return render_template('index.html')
 
-
-
-
+# Allowed file types
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+# Show the demultiplexing page
 @app.route('/demultiplexing',methods=['GET', 'POST'])
 def demultiplexing():
     ''' Demultiplexing 
@@ -144,7 +141,7 @@ def demultiplexing():
         return render_template('command.html',data=data)
     return render_template('demultiplexing.html')
 
-
+# Show the demultiplexing batch page
 @app.route('/demultiplexing_batch',methods=['GET', 'POST'])
 def demultiplexing_batch():
     if request.method == 'POST':
@@ -230,17 +227,17 @@ def demultiplexing_batch():
         return render_template('commands.html',data=data)
     return render_template('demultiplexing_batch.html')
 
-
+# Show the Crossmaper page
 @app.route('/crossmaper')
 def crossmaper():
     return render_template('crossmaper.html')
 
-
+# Show the command page
 @app.route('/command')
 def command():
     return render_template('command.html',data={})
 
-
+# Show the Crossmaper DNA page and get all the parameters from the form
 @app.route('/crossmaper/dna',methods=['GET','POST'])
 def crossmaperdna():
     if request.method == 'GET':
@@ -289,7 +286,7 @@ def crossmaperdna():
         data = {'command':command}
         return render_template('command.html',data=data)
 
-
+# Show the Crossmaper RNA page and get all the parameters from the form
 @app.route('/crossmaper/rna',methods=['GET','POST'])
 def crossmaperrna():
     if request.method == 'GET':
@@ -343,14 +340,7 @@ def crossmaperrna():
         data = {'command':command}
         return render_template('command.html',data=data)
 
-
-def search_files(root_dir, extension):
-    for root, dirs, files in os.walk(root_dir):
-        for file in files:
-            if file.endswith(extension):
-                print(os.path.join(root, file))
-
-
+# Create the app
 def create_app():
     return app
 
@@ -365,6 +355,5 @@ if __name__ == "__main__":
     # run in debug mode: flask --app app --debug run
     # app.run(debug=True) ### functiona
     # app.run() ### functiona
-
-    #app.run(debug=True, port=5000)
+    # app.run(debug=True, port=5000)
     # app.run(host="127.0.0.1", port=8080, debug=True)docke

@@ -12,6 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN"
         crossorigin="anonymous"></script>
+    <script src="../static/index.js"></script>
     <title>SSH LOGIN</title>
 </head>
 
@@ -24,23 +25,34 @@
     <form id="get_user" action="/" method="post" enctype="multipart/form-data">
         <div class="container mt-5">
             <div class="row justify-content-center">
-                <div class="col-md-6">
+                <div class="col-md-3">
                     <div class="card">
                         <div class="card-body">
                             <div class="form-group">
                                 <label for="usuario">Host:</label>
-                                <input type="text" class="form-control" id="HOST" name="HOST" required>
+                                <br>
+                                <span class="d-inline-block" tabindex="0" data-bs-toggle="popover"
+                                    data-bs-trigger="hover focus" data-bs-content="ex: mnX.bsc.es">
+                                    <input type="text" class="form-control" id="HOST" name="HOST" required>
+                                </span>
                             </div>
                             <div class="form-group">
                                 <label for="usuario">Username:</label>
-                                <input type="text" class="form-control" id="USERNAME" name="USERNAME" required>
+                                <br>
+                                <span class="d-inline-block" tabindex="0" data-bs-toggle="popover"
+                                    data-bs-trigger="hover focus" data-bs-content="ex: bscXXXXX">
+                                    <input type="text" class="form-control" id="USERNAME" name="USERNAME" required>
+                                </span>
                             </div>
                             <div class="form-group">
                                 <label for="contrasena">Password:</label>
-                                <input type="password" class="form-control" id="PASSWORD" name="PASSWORD" required>
+                                <br>
+                                <span class="d-inline-block" tabindex="0" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-content="password">
+                                    <input type="password" class="form-control" id="PASSWORD" name="PASSWORD" required>
+                                </span>
                             </div>
                             <br>
-                            <button type="submit" id="makelogin" class="btn btn-outline-secondary btn-sm">Login</button>
+                            <button type="submit" id="makelogin" class="btn btn-outline-secondary">Login</button>
                         </div>
                     </div>
                 </div>
