@@ -243,10 +243,11 @@ def crossmaperdna():
     if request.method == 'GET':
         return render_template('crossmaperdna.html')
     if request.method == 'POST':
+        path_file = request.form['path_file']
         fastq = request.files.getlist("fastaq")
         fastq_ls = []
         for f in fastq:
-            fastq_ls.append(f.filename)
+            fastq_ls.append(path_file+f.filename)
 
         genome_name = request.form.getlist('genome_name')
         number_of_reads = request.form.getlist('number_of_reads')
@@ -271,6 +272,7 @@ def crossmaperdna():
         min_seed_length = request.form['min_seed_length']
         matching_score = request.form['matching_score']
         missmatch_penalty = request.form['mismatch_penalty']
+        store_com = request.form['store_com']
         fastq_ls_string = " ".join(fastq_ls)
         genome_name_string = " ".join(genome_name)
         number_of_reads_string = " ".join(number_of_reads)
@@ -279,7 +281,7 @@ def crossmaperdna():
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(hostname=host, username=username, password=password)
-        stdin, stdout, stderr = ssh.exec_command(f'touch crossmapperdna.txt; echo {command} >> crossmapperdna.txt')
+        stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}crossmapperdna.txt; echo {command} >> {store_com}crossmapperdna.txt')
         output = stdout.readlines()
         error = stderr.readlines()
         ssh.close()
@@ -292,10 +294,12 @@ def crossmaperrna():
     if request.method == 'GET':
         return render_template('crossmaperna.html')
     if request.method == 'POST':
+        path_file = request.form['path_file']
         fastq = request.files.getlist("fastaq")
         fastq_ls = []
         for f in fastq:
-            fastq_ls.append(f.filename)
+            fastq_ls.append(path_file+f.filename)
+            
         genome_name = request.form.getlist('genome_name')
         number_of_reads = request.form.getlist('number_of_reads')
         read_length = request.form.getlist('read_length')
@@ -347,6 +351,7 @@ def create_app():
 if __name__ == "__main__":
     from waitress import serve
     serve(app, host='127.0.0.1', port=5001)
+    # app.run()
     # serve(app, host='0.0.0.0', port=8080)
 
 
