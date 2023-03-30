@@ -89,7 +89,28 @@ def demultiplexing():
                 fastas_rv_ls.append(os.path.join(file_path,filename))
         output_dir = request.form['output_dir']
         getoption = request.form.get('getoption')
+        # if getoption == 'on':
+        #     ref_genome = request.files.getlist('ref_genome')
+        #     path_file_unique = request.form['path_file_unique']
+        #     ref_genome_ls = []
+        #     for f in ref_genome:
+        #         filename = secure_filename(f.filename)
+        #         ref_genome_ls.append(os.path.join(path_file_unique,filename))   
+        # else:
+        #     ref_genome = request.files.getlist('ref_genome')
+        #     path_files = request.form.getlist('path_files')
+        #     print(path_files)
+        #     ref_genome_ls = []
+        #     listoffiles = []
+        #     for f in ref_genome:
+        #         filename = secure_filename(f.filename)
+        #         print(filename)
+        #         listoffiles.append(filename)
+        #     for path,file in zip(path_files,listoffiles):
+        #         ref_genome_ls.append(os.path.join(path,filename)) 
         if getoption == 'on':
+        # if getoption == True:
+            print("same path")
             ref_genome = request.files.getlist('ref_genome')
             path_file_unique = request.form['path_file_unique']
             ref_genome_ls = []
@@ -104,10 +125,11 @@ def demultiplexing():
             listoffiles = []
             for f in ref_genome:
                 filename = secure_filename(f.filename)
-                print(filename)
+                print(f'filename: {filename}')
                 listoffiles.append(filename)
+                print(f'list: {listoffiles}')
             for path,file in zip(path_files,listoffiles):
-                ref_genome_ls.append(os.path.join(path,filename)) 
+                ref_genome_ls.append(os.path.join(path,file))
         organism_name = request.form.getlist('organism_name')
         num_of_threads = request.form['num_of_threads']
         reads_per_chunk = request.form['reads_per_chunk']
@@ -166,7 +188,10 @@ def demultiplexing_batch():
                 if compiled_reg.match(f.filename):
                     fastas_rv_ls.append(os.path.join(file_path,f.filename))
         getoption = request.form.get('getoption')
+        print(getoption)
         if getoption == 'on':
+        # if getoption == True:
+            print("same path")
             ref_genome = request.files.getlist('ref_genome')
             path_file_unique = request.form['path_file_unique']
             ref_genome_ls = []
@@ -181,10 +206,11 @@ def demultiplexing_batch():
             listoffiles = []
             for f in ref_genome:
                 filename = secure_filename(f.filename)
-                print(filename)
+                print(f'filename: {filename}')
                 listoffiles.append(filename)
+                print(f'list: {listoffiles}')
             for path,file in zip(path_files,listoffiles):
-                ref_genome_ls.append(os.path.join(path,filename))
+                ref_genome_ls.append(os.path.join(path,file))
         organism_name = request.form.getlist('organism_name')
         num_of_threads = request.form['num_of_threads']
         reads_per_chunk = request.form['reads_per_chunk']
