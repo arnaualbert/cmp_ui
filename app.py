@@ -356,6 +356,7 @@ def crossmaperrna():
         max_mismatch_per_len = request.form['max_mismatch_per_len']
         bact_mode = request.form['bact_mode']
         max_mismatch = request.form['max_mismatch']
+        store_com = request.form['store_com']
         star_tmp = request.form['star_temp']
         fastq_ls_string = " ".join(fastq_ls)
         genome_name_string = " ".join(genome_name)
@@ -366,7 +367,7 @@ def crossmaperrna():
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(hostname=host, username=username, password=password)
-        stdin, stdout, stderr = ssh.exec_command(f'touch crossmapperrna.txt; echo {command} >> crossmapperrna.txt')
+        stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}crossmapperrna.txt; echo {command} >> {store_com}crossmapperrna.txt')
         output = stdout.readlines()
         error = stderr.readlines()
         ssh.close()
