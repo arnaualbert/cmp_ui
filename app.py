@@ -156,7 +156,8 @@ def demultiplexing():
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(hostname=host, username=username, password=password)
-        stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}demultiplexing.txt; echo {command} >> {store_com}demultiplexing.txt')
+        # stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}demultiplexing.txt; echo {command} >> {store_com}demultiplexing.txt')
+        stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}demultiplexing.sh; echo {command} >> {store_com}demultiplexing.sh')
         output = stdout.readlines()
         error = stderr.readlines()
         ssh.close()
@@ -377,6 +378,8 @@ def create_app():
 if __name__ == "__main__":
     from waitress import serve
     serve(app, host='127.0.0.1', port=5001)
+
+
     # app.run()
     # serve(app, host='0.0.0.0', port=8080)
 
