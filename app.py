@@ -30,7 +30,7 @@ app.config['DEMULTIPLEXING_FOLDER'] = DEMULTIPLEXING_FOLDER
 app.config['DEMULTIPLEXING_FWD_FOLDER'] = FWD_FOLDER
 app.config['DEMULTIPLEXING_RV_FOLDER'] = RV_FOLDER
 
-ALLOWED_EXTENSIONS = set(['*fasta.*','fastaq.gz','gz','fq.gz','*fq.*'])
+ALLOWED_EXTENSIONS = set(['*fasta.*','fastaq.gz','gz','fq.gz','*fq.*','*'])
 
 # Show the ssh login page
 @app.route("/",methods=['GET','POST'])
@@ -188,6 +188,8 @@ def demultiplexing_batch():
                 compiled_reg = re.compile(reg)
                 if compiled_reg.match(f.filename):
                     fastas_rv_ls.append(os.path.join(file_path,f.filename))
+        print(fastas_fwd_ls)
+        print(fastas_rv_ls)
         getoption = request.form.get('getoption')
         print(getoption)
         if getoption == 'on':
@@ -238,14 +240,16 @@ def demultiplexing_batch():
         i = 0
         while i < len(ls_fwd):
             command = f'split_pooledSeqWGS_parallel.py --fastq1 {sort_ls_fwd[i]} --fastq2 {sort_ls_rv[i]} --outdir {output_dir} --refGenomes {ref_genome_string} --sampleNames {organism_name_string} --trheads {num_of_threads} --nreads_per_chunk {reads_per_chunk} --replace {rpl_ls_str} --skip_removing_tmp_files {skip_removing_tmp_files} --wit_db {wit_db}'
+            print(command)
             commands.append(command)
             i += 1
+        print(commands)
         data = {'command':commands}
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(hostname=host, username=username, password=password)
         stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}demultiplexingbatch.sh')
-        stdin, stdout, stderr = ssh.exec_command(f'echo '' > {store_com}demultiplexingbatch.sh')           
+        # stdin, stdout, stderr = ssh.exec_command(f'echo '' > {store_com}demultiplexingbatch.sh')           
         for com in commands:       
             # stdin, stdout, stderr = ssh.exec_command(f'echo {com} >> {store_com}demultiplexingbatch.txt')
             stdin, stdout, stderr = ssh.exec_command(f'echo {com} >> {store_com}demultiplexingbatch.sh')               
@@ -323,12 +327,18 @@ def crossmaperrna():
     if request.method == 'GET':
         return render_template('crossmaperna.html')
     if request.method == 'POST':
-        path_file = request.form['path_file']
+        # path_file = request.form['path_file']
+        path_file = request.form.getlist('path_file')
         fastq = request.files.getlist("fastaq")
         fastq_ls = []
+        list_files = []
+        # for f in fastq:
+            # fastq_ls.append(path_file+f.filename)
         for f in fastq:
-            fastq_ls.append(path_file+f.filename)
-            
+            fastq_ls.append(f.filename)
+        for path,file in zip(path_file,fastq_ls):
+            list_files.append(os.path.join(path,file))
+        print(list_files)
         genome_name = request.form.getlist('genome_name')
         number_of_reads = request.form.getlist('number_of_reads')
         read_length = request.form.getlist('read_length')
@@ -358,16 +368,18 @@ def crossmaperrna():
         max_mismatch = request.form['max_mismatch']
         store_com = request.form['store_com']
         star_tmp = request.form['star_temp']
-        fastq_ls_string = " ".join(fastq_ls)
+        # fastq_ls_string = " ".join(fastq_ls) ### old
+        list_files_string = " ".join(list_files)
         genome_name_string = " ".join(genome_name)
         number_of_reads_string = " ".join(number_of_reads)
         read_length_string = ",".join(read_length)
         annotations_gtf_ls_str = " ".join(annotations_gtf_ls)
-        command = f"crossmapper RNA -g {fastq_ls_string} -gn {genome_name_string} -rlen {read_length_string} -rlay {read_configuration} -N {number_of_reads_string} -a {annotations_gtf_ls_str} -t {number_of_cores} -e {base_error_rate} -d {oouter_distance} -s {standar_deviation} -C {coverage} -r {mutation_rate} -R {indel_fraction} -X {indel_extended} -S {seed_random_generator} -AMB {discard_ambiguos} -hapl {haplotype_mode} -o {output_directory} --verbose {verbose_mode} -gb {group_bar_chart} -rc {report_cross_mapped} --mapper-template {mapper_template_path} -max_mismatch_per_len {max_mismatch_per_len} -bact_mode {bact_mode} -max_mismatch {max_mismatch} -star_tmp {star_tmp}"
+        # command = f"crossmapper RNA -g {fastq_ls_string} -gn {genome_name_string} -rlen {read_length_string} -rlay {read_configuration} -N {number_of_reads_string} -a {annotations_gtf_ls_str} -t {number_of_cores} -e {base_error_rate} -d {oouter_distance} -s {standar_deviation} -C {coverage} -r {mutation_rate} -R {indel_fraction} -X {indel_extended} -S {seed_random_generator} -AMB {discard_ambiguos} -hapl {haplotype_mode} -o {output_directory} --verbose {verbose_mode} -gb {group_bar_chart} -rc {report_cross_mapped} --mapper-template {mapper_template_path} -max_mismatch_per_len {max_mismatch_per_len} -bact_mode {bact_mode} -max_mismatch {max_mismatch} -star_tmp {star_tmp}"
+        command = f"crossmapper RNA -g {list_files_string} -gn {genome_name_string} -rlen {read_length_string} -rlay {read_configuration} -N {number_of_reads_string} -a {annotations_gtf_ls_str} -t {number_of_cores} -e {base_error_rate} -d {oouter_distance} -s {standar_deviation} -C {coverage} -r {mutation_rate} -R {indel_fraction} -X {indel_extended} -S {seed_random_generator} -AMB {discard_ambiguos} -hapl {haplotype_mode} -o {output_directory} --verbose {verbose_mode} -gb {group_bar_chart} -rc {report_cross_mapped} --mapper-template {mapper_template_path} -max_mismatch_per_len {max_mismatch_per_len} -bact_mode {bact_mode} -max_mismatch {max_mismatch} -star_tmp {star_tmp}"
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(hostname=host, username=username, password=password)
-        stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}crossmapperrna.txt; echo {command} >> {store_com}crossmapperrna.txt')
+        stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}crossmapperrna.sh; echo {command} >> {store_com}crossmapperrna.sh')
         output = stdout.readlines()
         error = stderr.readlines()
         ssh.close()
@@ -379,8 +391,8 @@ def create_app():
     return app
 
 if __name__ == "__main__":
-    from waitress import serve
-    serve(app, host='127.0.0.1', port=5001)
+    # from waitress import serve
+    # serve(app, host='127.0.0.1', port=5001)
 
 
     # app.run()
@@ -392,5 +404,5 @@ if __name__ == "__main__":
     # run in debug mode: flask --app app --debug run
     # app.run(debug=True) ### functiona
     # app.run() ### functiona
-    # app.run(debug=True, port=5000)
+    app.run(debug=True, port=5000)
     # app.run(host="127.0.0.1", port=8080, debug=True)docke
