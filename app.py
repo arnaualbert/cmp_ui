@@ -391,8 +391,8 @@ def create_app():
     return app
 
 if __name__ == "__main__":
-    # from waitress import serve
-    # serve(app, host='127.0.0.1', port=5001)
+    from waitress import serve
+    serve(app, host='127.0.0.1', port=5001)
 
 
     # app.run()
@@ -404,5 +404,5 @@ if __name__ == "__main__":
     # run in debug mode: flask --app app --debug run
     # app.run(debug=True) ### functiona
     # app.run() ### functiona
-    app.run(debug=True, port=5000)
+    # app.run(debug=True, port=5000)
     # app.run(host="127.0.0.1", port=8080, debug=True)docke
