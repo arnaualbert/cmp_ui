@@ -158,7 +158,7 @@ def demultiplexing():
         ssh.connect(hostname=host, username=username, password=password)
         # stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}demultiplexing.txt; echo {command} >> {store_com}demultiplexing.txt')
         # stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}demultiplexing.sh; echo {command} >> {store_com}demultiplexing.sh')
-        stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}demultiplexing.sh;echo "#!/bin/bash" > {store_com}demultiplexing.sh; echo {command} > {store_com}demultiplexing.sh')
+        stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}demultiplexing.sh;echo "#!/bin/bash" > {store_com}demultiplexing.sh; echo {command} >> {store_com}demultiplexing.sh')
         output = stdout.readlines()
         error = stderr.readlines()
         ssh.close()
