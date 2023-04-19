@@ -276,12 +276,26 @@ def crossmaperdna():
     if request.method == 'GET':
         return render_template('crossmaperdna.html')
     if request.method == 'POST':
-        path_file = request.form['path_file']
+        # path_file = request.form['path_file']
+        path_file = request.form.getlist('path_file')
         fastq = request.files.getlist("fastaq")
         fastq_ls = []
+        # NEW
+        list_files = []
+        #####
+        ##old
+        # for f in fastq:
+            # fastq_ls.append(path_file+f.filename)
+        ###
+        ### NEW VERSION 
         for f in fastq:
-            fastq_ls.append(path_file+f.filename)
-
+            fastq_ls.append(f.filename)
+        ###
+        # NEW
+        for path,file in zip(path_file,fastq_ls):
+            list_files.append(os.path.join(path,file))
+        print(list_files)
+        #####
         genome_name = request.form.getlist('genome_name')
         number_of_reads = request.form.getlist('number_of_reads')
         read_length = request.form.getlist('read_length')
@@ -306,11 +320,15 @@ def crossmaperdna():
         matching_score = request.form['matching_score']
         missmatch_penalty = request.form['mismatch_penalty']
         store_com = request.form['store_com']
-        fastq_ls_string = " ".join(fastq_ls)
+        # NEW
+        list_files_string = " ".join(list_files)
+        #####
+        # fastq_ls_string = " ".join(fastq_ls)
         genome_name_string = " ".join(genome_name)
         number_of_reads_string = " ".join(number_of_reads)
         read_length_string = ",".join(read_length)
-        command = f"crossmapper DNA -g {fastq_ls_string} -gn {genome_name_string} -rlen {read_length_string} -rlay {read_configuration} -N {number_of_reads_string} -t {number_of_cores} -e {base_error_rate} -d {oouter_distance} -s {standar_deviation} -C {coverage} -r {mutation_rate} -R {indel_fraction} -X {indel_extended} -S {seed_random_generator} -AMB {discard_ambiguos} -hapl {haplotype_mode} -o {output_directory} --verbose {verbose_mode} -gb {group_bar_chart} -rc {report_cross_mapped} --mapper-template {mapper_template_path} -k {min_seed_length} -A {matching_score} -B {missmatch_penalty}"
+        # command = f"crossmapper DNA -g {fastq_ls_string} -gn {genome_name_string} -rlen {read_length_string} -rlay {read_configuration} -N {number_of_reads_string} -t {number_of_cores} -e {base_error_rate} -d {oouter_distance} -s {standar_deviation} -C {coverage} -r {mutation_rate} -R {indel_fraction} -X {indel_extended} -S {seed_random_generator} -AMB {discard_ambiguos} -hapl {haplotype_mode} -o {output_directory} --verbose {verbose_mode} -gb {group_bar_chart} -rc {report_cross_mapped} --mapper-template {mapper_template_path} -k {min_seed_length} -A {matching_score} -B {missmatch_penalty}"
+        command = f"crossmapper DNA -g {list_files_string} -gn {genome_name_string} -rlen {read_length_string} -rlay {read_configuration} -N {number_of_reads_string} -t {number_of_cores} -e {base_error_rate} -d {oouter_distance} -s {standar_deviation} -C {coverage} -r {mutation_rate} -R {indel_fraction} -X {indel_extended} -S {seed_random_generator} -AMB {discard_ambiguos} -hapl {haplotype_mode} -o {output_directory} --verbose {verbose_mode} -gb {group_bar_chart} -rc {report_cross_mapped} --mapper-template {mapper_template_path} -k {min_seed_length} -A {matching_score} -B {missmatch_penalty}"
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(hostname=host, username=username, password=password)
@@ -382,7 +400,7 @@ def crossmaperrna():
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(hostname=host, username=username, password=password)
         # stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}crossmapperrna.sh; echo {command} >> {store_com}crossmapperrna.sh')
-        stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}crossmapperrna.sh; echo "#!/bin/bash" ;echo {command} >> {store_com}crossmapperrna.sh')
+        stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}crossmapperrna.sh; echo "#!/bin/bash" > {store_com}crossmapperrna.sh ;echo {command} >> {store_com}crossmapperrna.sh')
 
         output = stdout.readlines()
         error = stderr.readlines()
