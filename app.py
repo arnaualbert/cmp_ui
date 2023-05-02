@@ -334,22 +334,38 @@ def crossmaperdna():
         number_of_reads_string = " ".join(number_of_reads)
         read_length_string = ",".join(read_length)
         # command = f"crossmapper DNA -g {fastq_ls_string} -gn {genome_name_string} -rlen {read_length_string} -rlay {read_configuration} -N {number_of_reads_string} -t {number_of_cores} -e {base_error_rate} -d {oouter_distance} -s {standar_deviation} -C {coverage} -r {mutation_rate} -R {indel_fraction} -X {indel_extended} -S {seed_random_generator} -AMB {discard_ambiguos} -hapl {haplotype_mode} -o {output_directory} --verbose {verbose_mode} -gb {group_bar_chart} -rc {report_cross_mapped} --mapper-template {mapper_template_path} -k {min_seed_length} -A {matching_score} -B {missmatch_penalty}"
-        command = f"crossmapper DNA -g {list_files_string} -gn {genome_name_string} -rlen {read_length_string} -rlay {read_configuration} -N {number_of_reads_string} -t {number_of_cores} -e {base_error_rate} -d {oouter_distance} -s {standar_deviation} -C {coverage} -r {mutation_rate} -R {indel_fraction} -X {indel_extended} -S {seed_random_generator} -AMB {discard_ambiguos} -hapl {haplotype_mode} -o {output_directory} --verbose {verbose_mode} -gb {group_bar_chart} -rc {report_cross_mapped} --mapper-template {mapper_template_path} -k {min_seed_length} -A {matching_score} -B {missmatch_penalty}"
+        # command = f"crossmapper DNA -g {list_files_string} -gn {genome_name_string} -rlen {read_length_string} -rlay {read_configuration} -N {number_of_reads_string} -t {number_of_cores} -e {base_error_rate} -d {oouter_distance} -s {standar_deviation} -C {coverage} -r {mutation_rate} -R {indel_fraction} -X {indel_extended} -S {seed_random_generator} -AMB {discard_ambiguos} -hapl {haplotype_mode} -o {output_directory} --verbose {verbose_mode} -gb {group_bar_chart} -rc {report_cross_mapped} --mapper-template {mapper_template_path} -k {min_seed_length} -A {matching_score} -B {missmatch_penalty}"
         if list_files == [''] or genome_name == [''] or store_com == "" or number_of_reads == ['']:
             data = 'Please fill all the fields'
             return render_template('crossmaperdna.html', data=data)
         else:
-            ssh = paramiko.SSHClient()
-            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            ssh.connect(hostname=host, username=username, password=password)
-            # stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}crossmapperdna.txt; echo {command} >> {store_com}crossmapperdna.txt')
-            # stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}crossmapperdna.sh; echo {command} >> {store_com}crossmapperdna.sh')
-            stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}crossmapperdna.sh; echo "#!/bin/bash" > {store_com}crossmapperdna.sh; echo {command} >> {store_com}crossmapperdna.sh')
-            output = stdout.readlines()
-            error = stderr.readlines()
-            ssh.close()
-            data = {'command':command}
-            return render_template('command.html',data=data)
+            if mapper_template_path == "":
+                command = f"crossmapper DNA -g {list_files_string} -gn {genome_name_string} -rlen {read_length_string} -rlay {read_configuration} -N {number_of_reads_string} -t {number_of_cores} -e {base_error_rate} -d {oouter_distance} -s {standar_deviation} -C {coverage} -r {mutation_rate} -R {indel_fraction} -X {indel_extended} -S {seed_random_generator} -AMB {discard_ambiguos} -hapl {haplotype_mode} -o {output_directory} --verbose {verbose_mode} -gb {group_bar_chart} -rc {report_cross_mapped} -k {min_seed_length} -A {matching_score} -B {missmatch_penalty}"
+                ssh = paramiko.SSHClient()
+                ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+                ssh.connect(hostname=host, username=username, password=password)
+                # stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}crossmapperdna.txt; echo {command} >> {store_com}crossmapperdna.txt')
+                # stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}crossmapperdna.sh; echo {command} >> {store_com}crossmapperdna.sh')
+                stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}crossmapperdna.sh; echo "#!/bin/bash" > {store_com}crossmapperdna.sh; echo {command} >> {store_com}crossmapperdna.sh')
+                output = stdout.readlines()
+                error = stderr.readlines()
+                ssh.close()
+                data = {'command':command}
+                return render_template('command.html',data=data)
+            else:
+                command = f"crossmapper DNA -g {list_files_string} -gn {genome_name_string} -rlen {read_length_string} -rlay {read_configuration} -N {number_of_reads_string} -t {number_of_cores} -e {base_error_rate} -d {oouter_distance} -s {standar_deviation} -C {coverage} -r {mutation_rate} -R {indel_fraction} -X {indel_extended} -S {seed_random_generator} -AMB {discard_ambiguos} -hapl {haplotype_mode} -o {output_directory} --verbose {verbose_mode} -gb {group_bar_chart} -rc {report_cross_mapped} --mapper-template {mapper_template_path} -k {min_seed_length} -A {matching_score} -B {missmatch_penalty}"
+                ssh = paramiko.SSHClient()
+                ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+                ssh.connect(hostname=host, username=username, password=password)
+                # stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}crossmapperdna.txt; echo {command} >> {store_com}crossmapperdna.txt')
+                # stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}crossmapperdna.sh; echo {command} >> {store_com}crossmapperdna.sh')
+                stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}crossmapperdna.sh; echo "#!/bin/bash" > {store_com}crossmapperdna.sh; echo {command} >> {store_com}crossmapperdna.sh')
+                output = stdout.readlines()
+                error = stderr.readlines()
+                ssh.close()
+                data = {'command':command}
+                return render_template('command.html',data=data)
+ 
             # return render_template('crossmaperdna.html')
 
 
@@ -408,22 +424,37 @@ def crossmaperrna():
         annotations_gtf_ls_str = " ".join(annotations_gtf_ls)
         # command = f"crossmapper RNA -g {fastq_ls_string} -gn {genome_name_string} -rlen {read_length_string} -rlay {read_configuration} -N {number_of_reads_string} -a {annotations_gtf_ls_str} -t {number_of_cores} -e {base_error_rate} -d {oouter_distance} -s {standar_deviation} -C {coverage} -r {mutation_rate} -R {indel_fraction} -X {indel_extended} -S {seed_random_generator} -AMB {discard_ambiguos} -hapl {haplotype_mode} -o {output_directory} --verbose {verbose_mode} -gb {group_bar_chart} -rc {report_cross_mapped} --mapper-template {mapper_template_path} -max_mismatch_per_len {max_mismatch_per_len} -bact_mode {bact_mode} -max_mismatch {max_mismatch} -star_tmp {star_tmp}"
         #it wordks command = f"crossmapper RNA -g {list_files_string} -gn {genome_name_string} -rlen {read_length_string} -rlay {read_configuration} -N {number_of_reads_string} -a {annotations_gtf_ls_str} -t {number_of_cores} -e {base_error_rate} -d {oouter_distance} -s {standar_deviation} -C {coverage} -r {mutation_rate} -R {indel_fraction} -X {indel_extended} -S {seed_random_generator} -AMB {discard_ambiguos} -hapl {haplotype_mode} -o {output_directory} --verbose {verbose_mode} -gb {group_bar_chart} -rc {report_cross_mapped} --mapper-template {mapper_template_path} -max_mismatch_per_len {max_mismatch_per_len} -bact_mode {bact_mode} -max_mismatch {max_mismatch} -star_tmp {star_tmp}"
-        command = f"crossmapper RNA -g {list_files_string} -gn {genome_name_string} -rlen {read_length_string} -rlay {read_configuration} -N {number_of_reads_string} -a {annotations_gtf_ls_str} -t {number_of_cores} -e {base_error_rate} -d {oouter_distance} -s {standar_deviation} -C {coverage} -r {mutation_rate} -R {indel_fraction} -X {indel_extended} -S {seed_random_generator} -AMB {discard_ambiguos} -hapl {haplotype_mode} -o {output_directory} --verbose {verbose_mode} -gb {group_bar_chart} -rc {report_cross_mapped} --mapper-template {mapper_template_path} -max_mismatch_per_len {max_mismatch_per_len} -bact_mode {bact_mode} -max_mismatch {max_mismatch}" # same without -star_tmp
+        # command = f"crossmapper RNA -g {list_files_string} -gn {genome_name_string} -rlen {read_length_string} -rlay {read_configuration} -N {number_of_reads_string} -a {annotations_gtf_ls_str} -t {number_of_cores} -e {base_error_rate} -d {oouter_distance} -s {standar_deviation} -C {coverage} -r {mutation_rate} -R {indel_fraction} -X {indel_extended} -S {seed_random_generator} -AMB {discard_ambiguos} -hapl {haplotype_mode} -o {output_directory} --verbose {verbose_mode} -gb {group_bar_chart} -rc {report_cross_mapped} --mapper-template {mapper_template_path} -max_mismatch_per_len {max_mismatch_per_len} -bact_mode {bact_mode} -max_mismatch {max_mismatch}" # same without -star_tmp
         if list_files == [''] or genome_name == [''] or number_of_reads == [''] or read_length == [''] or annotations_gtf_ls == ['']:
             data = "please fill all the fields"
             return render_template('crossmaperna.html', data=data)
         else:
-            ssh = paramiko.SSHClient()
-            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            ssh.connect(hostname=host, username=username, password=password)
-            # stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}crossmapperrna.sh; echo {command} >> {store_com}crossmapperrna.sh')
-            stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}crossmapperrna.sh; echo "#!/bin/bash" > {store_com}crossmapperrna.sh ;echo {command} >> {store_com}crossmapperrna.sh')
+            if mapper_template_path == "":
+                command = f"crossmapper RNA -g {list_files_string} -gn {genome_name_string} -rlen {read_length_string} -rlay {read_configuration} -N {number_of_reads_string} -a {annotations_gtf_ls_str} -t {number_of_cores} -e {base_error_rate} -d {oouter_distance} -s {standar_deviation} -C {coverage} -r {mutation_rate} -R {indel_fraction} -X {indel_extended} -S {seed_random_generator} -AMB {discard_ambiguos} -hapl {haplotype_mode} -o {output_directory} --verbose {verbose_mode} -gb {group_bar_chart} -rc {report_cross_mapped} -max_mismatch_per_len {max_mismatch_per_len} -bact_mode {bact_mode} -max_mismatch {max_mismatch}" # same without -star_tmp
+                ssh = paramiko.SSHClient()
+                ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+                ssh.connect(hostname=host, username=username, password=password)
+                # stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}crossmapperrna.sh; echo {command} >> {store_com}crossmapperrna.sh')
+                stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}crossmapperrna.sh; echo "#!/bin/bash" > {store_com}crossmapperrna.sh ;echo {command} >> {store_com}crossmapperrna.sh')  
+                output = stdout.readlines()
+                error = stderr.readlines()
+                ssh.close()
+                data = {'command':command}
+                return render_template('command.html',data=data)
+            else:
+                command = f"crossmapper RNA -g {list_files_string} -gn {genome_name_string} -rlen {read_length_string} -rlay {read_configuration} -N {number_of_reads_string} -a {annotations_gtf_ls_str} -t {number_of_cores} -e {base_error_rate} -d {oouter_distance} -s {standar_deviation} -C {coverage} -r {mutation_rate} -R {indel_fraction} -X {indel_extended} -S {seed_random_generator} -AMB {discard_ambiguos} -hapl {haplotype_mode} -o {output_directory} --verbose {verbose_mode} -gb {group_bar_chart} -rc {report_cross_mapped} --mapper-template {mapper_template_path} -max_mismatch_per_len {max_mismatch_per_len} -bact_mode {bact_mode} -max_mismatch {max_mismatch}" # same without -star_tmp
+                ssh = paramiko.SSHClient()
+                ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+                ssh.connect(hostname=host, username=username, password=password)
+                # stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}crossmapperrna.sh; echo {command} >> {store_com}crossmapperrna.sh')
+                stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}crossmapperrna.sh; echo "#!/bin/bash" > {store_com}crossmapperrna.sh ;echo {command} >> {store_com}crossmapperrna.sh')
 
-            output = stdout.readlines()
-            error = stderr.readlines()
-            ssh.close()
-            data = {'command':command}
-            return render_template('command.html',data=data)
+                output = stdout.readlines()
+                error = stderr.readlines()
+                ssh.close()
+                data = {'command':command}
+                return render_template('command.html',data=data)
+
             # return render_template('crossmaperna.html')
 
 
