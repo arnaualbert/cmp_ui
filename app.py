@@ -30,7 +30,9 @@ app.config['DEMULTIPLEXING_FOLDER'] = DEMULTIPLEXING_FOLDER
 app.config['DEMULTIPLEXING_FWD_FOLDER'] = FWD_FOLDER
 app.config['DEMULTIPLEXING_RV_FOLDER'] = RV_FOLDER
 
-ALLOWED_EXTENSIONS = set(['*fasta.*','fastaq.gz','gz','fq.gz','*fq.*','*','.fasta','fasta'])
+# ALLOWED_EXTENSIONS = set(['*fasta.*','fastaq.gz','gz','fq.gz','*fq.*','*','.fasta','fasta','fastq.gz'])
+# ALLOWED_EXTENSIONS = set(['fastaq','.fastaq','.fastq','*fasta.*','fastaq.gz','gz','fq.gz','*fq.*','*','.fasta','fasta','fastq.gz'])
+ALLOWED_EXTENSIONS = set(['fastaq','.fastaq','.fastq','*fasta.*','fastaq.gz','gz','fq.gz','*fq.*','*','.fasta','fasta','fastq.gz','fastqc.html','fastqc.zip'])
 
 # Show the ssh login page
 @app.route("/",methods=['GET','POST'])
@@ -61,8 +63,18 @@ def home():
     return render_template('index.html')
 
 # Allowed file types
+# def allowed_file(filename):
+    # return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
 def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    for extension in ALLOWED_EXTENSIONS:
+        if filename.endswith(extension):
+            print(extension)
+            print(filename.endswith(extension))
+            print(filename)
+            return True
+    return False
 
 # Show the demultiplexing page
 @app.route('/demultiplexing',methods=['GET', 'POST'])
@@ -76,6 +88,7 @@ def demultiplexing():
         fastas_fwd_ls = []
         file_path = request.form['path_file']
         for f in fastas_fwd:
+            print(f.filename)
             if f and allowed_file(f.filename):         
                 print(f.filename)
                 print(secure_filename(f.filename))
