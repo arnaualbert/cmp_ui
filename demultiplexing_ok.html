@@ -36,15 +36,20 @@
     </nav>
     <br><br>
     <div id="forms">
-        <form id="form_demultiplex" action="/demultiplexing_batch" method="post" enctype="multipart/form-data">
+        <form id="form_demultiplex" action="/demultiplexing" method="post" enctype="multipart/form-data">
             <div class="container text-center">
                 <div class="row g-3 row-cols-4">
                     <div class="col">
-                        <label for="fastas" class="col-form-label">FASTAS</label>
+                        <label for="fasta0" class="col-form-label">FASTQ 1 FWD</label>
                     </div>
                     <div class="col">
-                        <input type="file" id="fastas" name="fastas" directory="" webkitdirectory="" mozdirectory=""
-                            msdirectory="" odirectory="" class="form-control">
+                        <input type="file" id="fasta0" name="fastas_fwd"  class="form-control">
+                    </div>
+                    <div class="col">
+                        <label for="fasta1" class="col-form-label">FASTQ 2 RV</label>
+                    </div>
+                    <div class="col">
+                        <input type="file" id="fasta1" name="fastas_rv" class="form-control">
                     </div>
                     <div class="col">
                         <label for="output_dir" class="col-form-label">Output Directory</label>
@@ -56,21 +61,13 @@
                         <label for="path_file" class="col-form-label">File Path</label>
                     </div>
                     <div class="col">
-                        <input type="text" id="path_file" name="path_file" class="form-control">
+                        <input type="text" id="path_file" name="path_file" class="form-control">                        
                     </div>
                     <div class="col">
-
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.location.href='/demultiplexing_batch'">Batch Mode</button>
                     </div>
                     <div class="col">
-
-                    </div>
-                    <div class="col">
-                        <p>Batch Mode</p>
-                    </div>
-                    <div class="col form-check form-switch">
-                        <input class="form-check-input" type="checkbox" role="switch" id="getoption" name="getoption"
-                            onclick="window.location.href='/demultiplexing'" checked>
-                        <p id="yes">Yes</p>
+                        <p id="isactivated">Batch mode deactivated</p>
                     </div>
                 </div>
                 <hr class="border border-secondary border-2 opacity-75">
@@ -80,8 +77,7 @@
                             <p>Is the same path for all the reference genome?</p>
                         </div>
                         <div class="col form-check form-switch">
-                            <input class="form-check-input" type="checkbox" role="switch" id="getoption"
-                                name="getoption" onclick="pathquestion()" checked>
+                            <input class="form-check-input" type="checkbox" role="switch" id="getoption" name="getoption" onclick="pathquestion()" checked>
                             <p id="yes">Yes</p>
                             <p id="no" style="display:none">No</p>
                         </div>
@@ -107,11 +103,11 @@
                         <div class="col">
                             <input type="text" id="organism_name" name="organism_name" class="form-control">
                         </div>
-                        <div class="col" id="nopath" style="display:none">
+                        <div class="col" id="nopath"  style="display:none">
                             <label for="path_file" class="col-form-label">Files Path</label>
                         </div>
                         <div class="col" id="nopath" style="display:none">
-                            <input type="text" id="path_files" name="path_files" class="form-control">
+                            <input type="text" id="path_files" name="path_files" class="form-control" >
                         </div>
                         <div class="col">
                             <button type="button" class="btn btn-outline-secondary btn-sm"
@@ -177,11 +173,12 @@
                     <input type="text" id="store_com" name="store_com" class="form-control">
                 </div>
                 <button type="submit" id="proceed_demultiplexing" class="btn btn-outline-secondary btn-sm"
-                    onclick="sendDemultiplexingBatch()">Proceed</button>
+                    onclick="sendDemultiplexing()">Proceed</button>
             </div>
         </div>
         </form>
     </div>
+    <p>{{ data }}</p>
     <br>
     <br>
     <br>
