@@ -41,7 +41,7 @@ def index():
         global host 
         global username
         global password
-        # global ssh
+        global ssh
         host = request.form['HOST']
         username = request.form['USERNAME']
         password = request.form['PASSWORD']
@@ -77,10 +77,10 @@ def allowed_file(filename):
             return True
     return False
 
-# def dem(store_com,command):
-#     stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}demultiplexing.sh;echo "#!/bin/bash" > {store_com}demultiplexing.sh; echo {command} >> {store_com}demultiplexing.sh')
-#     output = stdout.readlines()
-#     error = stderr.readlines()
+def dem(store_com,command):
+    stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}demultiplexing.sh;echo "#!/bin/bash" > {store_com}demultiplexing.sh; echo {command} >> {store_com}demultiplexing.sh')
+    output = stdout.readlines()
+    error = stderr.readlines()
 
 # Show the demultiplexing page
 @app.route('/demultiplexing',methods=['GET', 'POST'])
@@ -159,21 +159,21 @@ def demultiplexing():
             data = "please fill all the fields"
             return render_template('demultiplexing.html',data=data)
         else:
-            ssh = paramiko.SSHClient()
-            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            ssh.connect(hostname=host, username=username, password=password)
+            # ssh = paramiko.SSHClient()
+            # ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            # ssh.connect(hostname=host, username=username, password=password)
             # # stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}demultiplexing.txt; echo {command} >> {store_com}demultiplexing.txt')
             # # stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}demultiplexing.sh; echo {command} >> {store_com}demultiplexing.sh')
-            # daemon = Thread(target=dem,args=(store_com,command),daemon=True)
-            # daemon.start()
+            daemon = Thread(target=dem,args=(store_com,command),daemon=True)
+            daemon.start()
             ##
-            stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}demultiplexing.sh;echo "#!/bin/bash" > {store_com}demultiplexing.sh; echo {command} >> {store_com}demultiplexing.sh')
-            output = stdout.readlines()
-            error = stderr.readlines()
-            ##
-            ssh.close()
-            return render_template('command.html',data=data)
-            # return render_template('demultiplexing.html')
+            # stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}demultiplexing.sh;echo "#!/bin/bash" > {store_com}demultiplexing.sh; echo {command} >> {store_com}demultiplexing.sh')
+            # output = stdout.readlines()
+            # error = stderr.readlines()
+            ###
+            # ssh.close()
+            # return render_template('command.html',data=data)
+            return render_template('demultiplexing.html')
     return render_template('demultiplexing.html')
 
 # Show the demultiplexing batch page
@@ -181,30 +181,25 @@ def demultiplexing():
 def demultiplexing_batch():
     if request.method == 'POST':
         output_dir = request.form['output_dir']
-        print(output_dir)
         fastas_fwd = request.files.getlist("fastas")
-        print(fastas_fwd)
         fastas_fwd_ls = []
         file_path = request.form['path_file']
-        print(file_path)
         for f in fastas_fwd:
             if f and allowed_file(f.filename):
-                # print(f.filename)
-                regs = r'[12].{1,3}fast'
-                checkeds = re.search(regs,f.filename)
-                if checkeds:
-                    if "1" in checkeds.group(): 
-                        fastas_fwd_ls.append(os.path.join(file_path,f.filename))
+                print(f.filename)
+                reg = r'.*R1.*|.*r1.*'
+                compiled_reg = re.compile(reg)
+                if compiled_reg.match(f.filename):
+                    fastas_fwd_ls.append(os.path.join(file_path,f.filename))
         fastas_rv = request.files.getlist("fastas")
         fastas_rv_ls = []
         for f in fastas_rv:
             if f and allowed_file(f.filename):
-                # filename = secure_filename(f.filename)
-                regs = r'[12].{1,3}fast'
-                checkeds = re.search(regs,f.filename)
-                if checkeds:
-                    if "2" in checkeds.group(): 
-                        fastas_rv_ls.append(os.path.join(file_path,f.filename))
+                filename = secure_filename(f.filename)
+                reg = r'.*R2.*|.*r2.*'
+                compiled_reg = re.compile(reg)
+                if compiled_reg.match(f.filename):
+                    fastas_rv_ls.append(os.path.join(file_path,f.filename))
         print(fastas_fwd_ls)
         print(fastas_rv_ls)
         getoption = request.form.get('getoption')
@@ -266,9 +261,9 @@ def demultiplexing_batch():
             data = "please fill all the fields"
             return render_template('demultiplexing_batch.html',data=data)
         else:
-            ssh = paramiko.SSHClient()
-            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            ssh.connect(hostname=host, username=username, password=password)
+            # ssh = paramiko.SSHClient()
+            # ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            # ssh.connect(hostname=host, username=username, password=password)
             stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}demultiplexingbatch.sh')
             stdin, stdout, stderr = ssh.exec_command(f'echo "#!/bin/bash" > {store_com}demultiplexingbatch.sh')           
             for com in commands:       
@@ -276,7 +271,7 @@ def demultiplexing_batch():
                 stdin, stdout, stderr = ssh.exec_command(f'echo {com} >> {store_com}demultiplexingbatch.sh')               
             output = stdout.readlines()
             error = stderr.readlines()
-            ssh.close()
+            # ssh.close()
             return render_template('commands.html',data=data)
     return render_template('demultiplexing_batch.html')
 
