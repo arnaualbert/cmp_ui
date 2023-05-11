@@ -210,7 +210,7 @@ def demultiplexing_batch():
         return render_template('demultiplexing_batch.html')
     if request.method == 'POST':
         data = request.get_data(as_text=True)
-        # print(data)
+        print(data)
         data =  data
         ref_genome_list = []
         organism_name_list = []
@@ -296,7 +296,6 @@ def demultiplexing_batch():
         fastas_fwd = sorted(fastas_forward)
         fastas_rv = sorted(fastas_reversed)
 
-
         if have_getoption and fastas_fwd != [] and fastas_rv != [] and output_dir != "" and path_file != "" and ref_genome_list != [] and organism_name_list != [] and store_com != "" and path_file_unique != "":
             ref_gen_l = []
             path_fasta_fwd = []
@@ -333,15 +332,10 @@ def demultiplexing_batch():
             return render_template('commands.html',data=data)
         elif fastas_fwd != [] and fastas_rv != [] and output_dir != "" and path_file != "" and ref_genome_list != [] and organism_name_list != [] and store_com != "" and path_files_list != "" :
             ref_gen_ls = []
-            print(ref_genome_list)
-            print(organism_name_list)
-            print(path_files_list)
-            # fastas_fs_ls_string = os.path.join(path_file,fastas_fwd)
-            # fastas_rv_ls_string = os.path.join(path_file,fastas_rv)
-            path_fasta_wd = []
+            path_fasta_fwd = []
             path_fasta_rv = []
             for fasta in fastas_fwd:
-                path_fasta_wd.append(os.path.join(path_file,fasta))
+                path_fasta_fwd.append(os.path.join(path_file,fasta))
             for fasta in fastas_rv:
                 path_fasta_rv.append(os.path.join(path_file,fasta))   
             for path,gen_ref in zip(path_files_list,ref_genome_list):
