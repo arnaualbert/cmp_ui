@@ -162,10 +162,27 @@ function sendDemultiplexing() {
 
     for (let i = 0; i < total_obj; i++) {
         var demultiplex_params = new Demultiplex(fasta0[i].value, fasta1[i].value, output_dir[i].value, referencesgenomesarray, organismNamearray, numberofthreads[i].value, readsperchunk[i].value, replacements[i].value, skipRemovingTmpFilesFrom[i].value, witDB[i].value)
+        console.log(demultiplex_params)
         objects.push(demultiplex_params);
             
     }
-    console.log(objects);
 
 
+    // myString = "Asd"
+    // $.ajax({
+    //     url: '/demultiplexing',
+    //     type: 'POST',
+    //     data: myString,
+    //     contentType: 'text/plain',
+    //     success: function(response) {
+    //         console.log(response);
+    //     }
+    // });
+
+    // var fileName0 = fasta0[0].value.replace(/^.*\\/, "");
+    // var fileName1 = fasta1[0].value.replace(/^.*\\/, "");
+    
+    // document.cookie = "fastas_fwd_ls=" + fileName0
+    // document.cookie = "fastas_rv_ls=" + fileName1
+    // document.cookie =  "store_com=/home/doktor_ay/" 
 }

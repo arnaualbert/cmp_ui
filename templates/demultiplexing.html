@@ -14,6 +14,8 @@
         integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN"
         crossorigin="anonymous"></script>
     <script src="../static/indexdemultiplexing.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+
     <title>Demultiplex</title>
 </head>
 
@@ -36,7 +38,8 @@
     </nav>
     <br><br>
     <div id="forms">
-        <form id="form_demultiplex" action="/demultiplexing" method="post" enctype="multipart/form-data">
+        <!-- <form id="form_demultiplex" action="/demultiplexing" method="post" enctype="multipart/form-data"> -->
+        <form id="form_demultiplex" method="post" enctype="text/plain">
             <div class="container text-center">
                 <div class="row g-3 row-cols-4">
                     <div class="col">
@@ -176,14 +179,16 @@
                 <div class="col">
                     <input type="text" id="store_com" name="store_com" class="form-control">
                 </div>
-                <button type="submit" id="proceed_demultiplexing" class="btn btn-outline-secondary btn-sm">Proceed</button>
-                <!-- <button type="submit" id="proceed_demultiplexing" class="btn btn-outline-secondary btn-sm"
-                    onclick="sendDemultiplexing()">Proceed</button> -->
+                <!-- <button type="submit" id="proceed_demultiplexing" class="btn btn-outline-secondary btn-sm">Proceed</button> -->
+                <button type="submit" id="proceed_demultiplexing" class="btn btn-outline-secondary btn-sm"
+                    onclick="sendDemultiplexing()">Proceed</button> 
             </div>
+            <br>
+            <br>
+            <p class="font-weight-bold">{{ data }}</p>
         </div>
         </form>
     </div>
-    <p>{{ data }}</p>
     <br>
     <br>
     <br>

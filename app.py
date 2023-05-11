@@ -32,7 +32,11 @@ app.config['DEMULTIPLEXING_RV_FOLDER'] = RV_FOLDER
 
 # ALLOWED_EXTENSIONS = set(['*fasta.*','fastaq.gz','gz','fq.gz','*fq.*','*','.fasta','fasta','fastq.gz'])
 # ALLOWED_EXTENSIONS = set(['fastaq','.fastaq','.fastq','*fasta.*','fastaq.gz','gz','fq.gz','*fq.*','*','.fasta','fasta','fastq.gz'])
-ALLOWED_EXTENSIONS = set(['fastaq','.fastaq','.fastq','*fasta.*','fastaq.gz','gz','fq.gz','*fq.*','*','.fasta','fasta','fastq.gz','fastqc.html','fastqc.zip'])
+# ALLOWED_EXTENSIONS = set(['fastaq','.fastaq','.fastq','*fasta.*','fastaq.gz','gz','fq.gz','*fq.*','*','.fasta','fasta','fastq.gz','fastqc.html','fastqc.zip'])
+ALLOWED_EXTENSIONS = set(['fastq','fastq.gz','fq','fq.gz','.fastq', '.fastq.gz', '.fq', '.fq.gz'])
+
+def chck(filename):
+    return filename.endswith(tuple(ALLOWED_EXTENSIONS))
 
 # Show the ssh login page
 @app.route("/",methods=['GET','POST'])
@@ -41,7 +45,7 @@ def index():
         global host 
         global username
         global password
-        # global ssh
+        global ssh
         host = request.form['HOST']
         username = request.form['USERNAME']
         password = request.form['PASSWORD']
@@ -63,209 +67,253 @@ def home():
         return render_template('index.html')
     return render_template('index.html')
 
-# Allowed file types
-# def allowed_file(filename):
-    # return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-
-def allowed_file(filename):
-    for extension in ALLOWED_EXTENSIONS:
-        if filename.endswith(extension):
-            print(extension)
-            print(filename.endswith(extension))
-            print(filename)
-            return True
-    return False
-
-# def dem(store_com,command):
-#     stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}demultiplexing.sh;echo "#!/bin/bash" > {store_com}demultiplexing.sh; echo {command} >> {store_com}demultiplexing.sh')
-#     output = stdout.readlines()
-#     error = stderr.readlines()
-
-# Show the demultiplexing page
 @app.route('/demultiplexing',methods=['GET', 'POST'])
 def demultiplexing():
     ''' Demultiplexing 
         This function is used to demultiplex the fastq files.
         It takes all the parameters from the html form.
     '''
+
+    if request.method == 'GET':
+        return render_template('demultiplexing.html')
+
     if request.method == 'POST':
-        fastas_fwd = request.files.getlist("fastas_fwd")
-        fastas_fwd_ls = []
-        file_path = request.form['path_file']
-        for f in fastas_fwd:
-            print(f.filename)
-            if f and allowed_file(f.filename):         
-                print(f.filename)
-                print(secure_filename(f.filename))
-                filename = secure_filename(f.filename)
-                fastas_fwd_ls.append(os.path.join(file_path,filename))
-        fastas_rv = request.files.getlist("fastas_rv")
-        fastas_rv_ls = []
-        for f in fastas_rv:
-            if f and allowed_file(f.filename):
-                filename = secure_filename(f.filename)
-                fastas_rv_ls.append(os.path.join(file_path,filename))
-        output_dir = request.form['output_dir']
-        getoption = request.form.get('getoption')
-        if getoption == 'on':
-        # if getoption == True:
-            print("same path")
-            ref_genome = request.files.getlist('ref_genome')
-            path_file_unique = request.form['path_file_unique']
-            ref_genome_ls = []
-            for f in ref_genome:
-                filename = secure_filename(f.filename)
-                ref_genome_ls.append(os.path.join(path_file_unique,filename))   
+        data = request.get_data(as_text=True)
+        print(data)
+        data =  data
+        ref_genome_list = []
+        organism_name_list = []
+        path_files_list=[]
+        lines = data.strip().split('\n')
+        print(len(data))
+        print(type(lines))
+        print(lines)
+        have_getoption = "getoption=on\r" in lines
+
+        if have_getoption:
+            for line in lines:
+                if line.startswith("ref_genome="):
+                    ref_genome_list.append(line.split('=')[1].rstrip())
+                elif line.startswith("organism_name="):
+                    organism_name_list.append(line.split('=')[1].rstrip())
+                elif line.startswith("path_files="):
+                    path_files_list.append(line.split("=")[1].rstrip())
+                elif line.startswith("fastas_fwd="):
+                    fastas_fwd = line.split("=")[1].rstrip()
+                elif line.startswith("fastas_rv="):
+                    fastas_rv = line.split("=")[1].rstrip()
+                elif line.startswith("output_dir="):
+                    output_dir = line.split("=")[1].rstrip()
+                elif line.startswith("path_file="):
+                    path_file = line.split("=")[1].rstrip()
+                elif line.startswith("path_file_unique="):
+                    path_file_unique = line.split("=")[1].rstrip()
+                elif line.startswith("num_of_threads="):
+                    num_of_threads = line.split("=")[1].rstrip()
+                elif line.startswith("reads_per_chunk="):
+                    reads_per_chunk = line.split("=")[1].rstrip()
+                elif line.startswith("replace="):
+                    replace = line.split("=")[1].rstrip()
+                elif line.startswith("skip_removing_tmp_files=True"):
+                    skip_removing_tmp_files = line.split("=")[1].rstrip()
+                elif line.startswith("wit_db="):
+                    wit_db = line.split("=")[1].rstrip()
+                elif line.startswith("getoption="):
+                    getoption = line.split("=")[1].rstrip()
+                elif line.startswith("store_com="):
+                    store_com = line.split("=")[1].rstrip()
         else:
-            ref_genome = request.files.getlist('ref_genome')
-            path_files = request.form.getlist('path_files')
-            print(path_files)
-            ref_genome_ls = []
-            listoffiles = []
-            for f in ref_genome:
-                filename = secure_filename(f.filename)
-                print(f'filename: {filename}')
-                listoffiles.append(filename)
-                print(f'list: {listoffiles}')
-            for path,file in zip(path_files,listoffiles):
-                ref_genome_ls.append(os.path.join(path,file))
-        organism_name = request.form.getlist('organism_name')
-        num_of_threads = request.form['num_of_threads']
-        reads_per_chunk = request.form['reads_per_chunk']
-        replace = request.files.getlist('replace')
-        store_com = request.form['store_com']
-        rpl_ls = []
-        for f in replace:
-            rpl_ls.append(f.filename)
-        skip_removing_tmp_files = request.form['skip_removing_tmp_files']
-        wit_db = request.form['wit_db']
-        params = {"--fastq1":fastas_fwd_ls,"--fastq2":fastas_rv_ls,"--outdir":output_dir,"--refGenomes":ref_genome,"--sampleNames":organism_name,"--trheads":num_of_threads,"--nreads_per_chunk":reads_per_chunk,"--skip_removing_tmp_files":skip_removing_tmp_files,"--wit_db":wit_db}
-        print(params)
-        print(type(params))
-        fastas_fs_ls_string = " ".join(fastas_fwd_ls)
-        fastas_rv_ls_string = " ".join(fastas_rv_ls)
-        ref_genome_string = " ".join(ref_genome_ls)
-        organism_name_string = " ".join(organism_name)
-        rpl_ls_str = " ".join(rpl_ls)
-        command = f'split_pooledSeqWGS_parallel.py --fastq1 {fastas_fs_ls_string} --fastq2 {fastas_rv_ls_string} --outdir {output_dir} --refGenomes {ref_genome_string} --sampleNames {organism_name_string} --trheads {num_of_threads} --nreads_per_chunk {reads_per_chunk} --replace {rpl_ls_str} --skip_removing_tmp_files {skip_removing_tmp_files} --wit_db {wit_db}'
-        print(command)
-        print(type(command))
-        data = {'command':command}
-        print(f'ip = {request.remote_addr}')
-        print(fastas_fs_ls_string)
-        print(fastas_fwd_ls)
-        if fastas_rv_ls == [] or fastas_fwd_ls == [] or output_dir == "" or ref_genome_string == "" or organism_name_string == "" or store_com == "":
-            data = "please fill all the fields"
-            return render_template('demultiplexing.html',data=data)
-        else:
+            print("No getoption")
+            for line in lines:
+                if line.startswith("ref_genome="):
+                    ref_genome_list.append(line.split('=')[1].rstrip())
+                elif line.startswith("organism_name="):
+                    organism_name_list.append(line.split('=')[1].rstrip())
+                elif line.startswith("path_files="):
+                    path_files_list.append(line.split("=")[1].rstrip())
+                elif line.startswith("fastas_fwd="):
+                    fastas_fwd = line.split("=")[1].rstrip()
+                elif line.startswith("fastas_rv="):
+                    fastas_rv = line.split("=")[1].rstrip()
+                elif line.startswith("output_dir="):
+                    output_dir = line.split("=")[1].rstrip()
+                elif line.startswith("path_file="):
+                    path_file = line.split("=")[1].rstrip()
+                elif line.startswith("path_file_unique="):
+                    path_file_unique = line.split("=")[1].rstrip()
+                elif line.startswith("num_of_threads="):
+                    num_of_threads = line.split("=")[1].rstrip()
+                elif line.startswith("reads_per_chunk="):
+                    reads_per_chunk = line.split("=")[1].rstrip()
+                elif line.startswith("replace="):
+                    replace = line.split("=")[1].rstrip()
+                elif line.startswith("skip_removing_tmp_files=True"):
+                    skip_removing_tmp_files = line.split("=")[1].rstrip()
+                elif line.startswith("wit_db="):
+                    wit_db = line.split("=")[1].rstrip()
+                elif line.startswith("getoption="):
+                    getoption = line.split("=")[1].rstrip()
+                elif line.startswith("store_com="):
+                    store_com = line.split("=")[1].rstrip()
+
+        if have_getoption and fastas_fwd != "" and fastas_rv != "" and output_dir != "" and path_file != "" and ref_genome_list != [] and organism_name_list != [] and store_com != "" and path_file_unique != "":
+            ref_gen_l = []
+            fastas_fs_ls_string = os.path.join(path_file,fastas_fwd)
+            fastas_rv_ls_string = os.path.join(path_file,fastas_rv)
+            for gen in ref_genome_list:
+                gen = os.path.join(path_file_unique,gen)
+                ref_gen_l.append(gen)
+            ref_genome_string = " ".join(ref_gen_l)
+            organism_name_string = " ".join(organism_name_list)
+            rpl_ls_str = replace
+            command = f'split_pooledSeqWGS_parallel.py --fastq1 {fastas_fs_ls_string} --fastq2 {fastas_rv_ls_string} --outdir {output_dir} --refGenomes {ref_genome_string} --sampleNames {organism_name_string} --trheads {num_of_threads} --nreads_per_chunk {reads_per_chunk} --replace {rpl_ls_str} --skip_removing_tmp_files {skip_removing_tmp_files} --wit_db {wit_db}'
+            print(command)
             ssh = paramiko.SSHClient()
             ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             ssh.connect(hostname=host, username=username, password=password)
-            # # stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}demultiplexing.txt; echo {command} >> {store_com}demultiplexing.txt')
-            # # stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}demultiplexing.sh; echo {command} >> {store_com}demultiplexing.sh')
-            # daemon = Thread(target=dem,args=(store_com,command),daemon=True)
-            # daemon.start()
-            ##
             stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}demultiplexing.sh;echo "#!/bin/bash" > {store_com}demultiplexing.sh; echo {command} >> {store_com}demultiplexing.sh')
             output = stdout.readlines()
             error = stderr.readlines()
-            ##
-            ssh.close()
-            return render_template('command.html',data=data)
-            # return render_template('demultiplexing.html')
+        elif fastas_fwd != "" and fastas_rv != "" and output_dir != "" and path_file != "" and ref_genome_list != [] and organism_name_list != [] and store_com != "" and path_files_list != "" :
+            ref_gen_ls = []
+            print(ref_genome_list)
+            print(organism_name_list)
+            print(path_files_list)
+            fastas_fs_ls_string = os.path.join(path_file,fastas_fwd)
+            fastas_rv_ls_string = os.path.join(path_file,fastas_rv)
+            for path,gen_ref in zip(path_files_list,ref_genome_list):
+                ref_gen_ls.append(os.path.join(path,gen_ref))
+            organism_name_string = " ".join(organism_name_list)
+            ref_genome_string = " ".join(ref_gen_ls)
+            rpl_ls_str = replace
+            command = f'split_pooledSeqWGS_parallel.py --fastq1 {fastas_fs_ls_string} --fastq2 {fastas_rv_ls_string} --outdir {output_dir} --refGenomes {ref_genome_string} --sampleNames {organism_name_string} --trheads {num_of_threads} --nreads_per_chunk {reads_per_chunk} --replace {rpl_ls_str} --skip_removing_tmp_files {skip_removing_tmp_files} --wit_db {wit_db}'
+            print(command)
+            ssh = paramiko.SSHClient()
+            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            ssh.connect(hostname=host, username=username, password=password)
+            stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}demultiplexing.sh;echo "#!/bin/bash" > {store_com}demultiplexing.sh; echo {command} >> {store_com}demultiplexing.sh')
+            output = stdout.readlines()
+            error = stderr.readlines()
+        else:
+            return render_template('demultiplexing.html',data="Please fill all the fields")
+        return render_template('command.html',data=data)
     return render_template('demultiplexing.html')
 
 # Show the demultiplexing batch page
 @app.route('/demultiplexing_batch',methods=['GET', 'POST'])
 def demultiplexing_batch():
+    if request.method == 'GET':
+        return render_template('demultiplexing_batch.html')
     if request.method == 'POST':
-        output_dir = request.form['output_dir']
-        print(output_dir)
-        fastas_fwd = request.files.getlist("fastas")
-        print(fastas_fwd)
-        fastas_fwd_ls = []
-        file_path = request.form['path_file']
-        print(file_path)
-        for f in fastas_fwd:
-            if f and allowed_file(f.filename):
-                # print(f.filename)
-                regs = r'[12].{1,3}fast'
-                checkeds = re.search(regs,f.filename)
-                if checkeds:
-                    if "1" in checkeds.group(): 
-                        fastas_fwd_ls.append(os.path.join(file_path,f.filename))
-        fastas_rv = request.files.getlist("fastas")
-        fastas_rv_ls = []
-        for f in fastas_rv:
-            if f and allowed_file(f.filename):
-                # filename = secure_filename(f.filename)
-                regs = r'[12].{1,3}fast'
-                checkeds = re.search(regs,f.filename)
-                if checkeds:
-                    if "2" in checkeds.group(): 
-                        fastas_rv_ls.append(os.path.join(file_path,f.filename))
-        print(fastas_fwd_ls)
-        print(fastas_rv_ls)
-        getoption = request.form.get('getoption')
-        print(getoption)
-        if getoption == 'on':
-        # if getoption == True:
-            print("same path")
-            ref_genome = request.files.getlist('ref_genome')
-            path_file_unique = request.form['path_file_unique']
-            ref_genome_ls = []
-            for f in ref_genome:
-                filename = secure_filename(f.filename)
-                ref_genome_ls.append(os.path.join(path_file_unique,filename))   
+        data = request.get_data(as_text=True)
+        # print(data)
+        data =  data
+        ref_genome_list = []
+        organism_name_list = []
+        path_files_list=[]
+        lines = data.strip().split('\n')
+        have_getoption = "getoption=on\r" in lines
+        fastas = []
+
+        if have_getoption:
+            for line in lines:
+                if line.startswith("ref_genome="):
+                    ref_genome_list.append(line.split('=')[1].rstrip())
+                elif line.startswith("organism_name="):
+                    organism_name_list.append(line.split('=')[1].rstrip())
+                elif line.startswith("path_files="):
+                    path_files_list.append(line.split("=")[1].rstrip())
+                elif line.startswith("fastas="):
+                    fastas.append(line.split("=")[1].rstrip())
+                elif line.startswith("output_dir="):
+                    output_dir = line.split("=")[1].rstrip()
+                elif line.startswith("path_file="):
+                    path_file = line.split("=")[1].rstrip()
+                elif line.startswith("path_file_unique="):
+                    path_file_unique = line.split("=")[1].rstrip()
+                elif line.startswith("num_of_threads="):
+                    num_of_threads = line.split("=")[1].rstrip()
+                elif line.startswith("reads_per_chunk="):
+                    reads_per_chunk = line.split("=")[1].rstrip()
+                elif line.startswith("replace="):
+                    replace = line.split("=")[1].rstrip()
+                elif line.startswith("skip_removing_tmp_files=True"):
+                    skip_removing_tmp_files = line.split("=")[1].rstrip()
+                elif line.startswith("wit_db="):
+                    wit_db = line.split("=")[1].rstrip()
+                elif line.startswith("getoption="):
+                    getoption = line.split("=")[1].rstrip()
+                elif line.startswith("store_com="):
+                    store_com = line.split("=")[1].rstrip()
         else:
-            ref_genome = request.files.getlist('ref_genome')
-            path_files = request.form.getlist('path_files')
-            print(path_files)
-            ref_genome_ls = []
-            listoffiles = []
-            for f in ref_genome:
-                filename = secure_filename(f.filename)
-                print(f'filename: {filename}')
-                listoffiles.append(filename)
-                print(f'list: {listoffiles}')
-            for path,file in zip(path_files,listoffiles):
-                ref_genome_ls.append(os.path.join(path,file))
-        organism_name = request.form.getlist('organism_name')
-        num_of_threads = request.form['num_of_threads']
-        reads_per_chunk = request.form['reads_per_chunk']
-        replace = request.files.getlist('replace')
-        store_com = request.form['store_com']
-        rpl_ls = []
-        for f in replace:
-            rpl_ls.append(f.filename)
-        skip_removing_tmp_files = request.form['skip_removing_tmp_files']
-        wit_db = request.form['wit_db']
-        params = {"split_pooledSeqWGS_parallel.py --fastq1":fastas_fwd_ls,"--fastq2":fastas_rv_ls,"--outdir":output_dir,"--refGenomes":ref_genome,"--sampleNames":organism_name,"--trheads":num_of_threads,"--nreads_per_chunk":reads_per_chunk,"--skip_removing_tmp_files":skip_removing_tmp_files,"--wit_db":wit_db}
-        print(params)
-        ref_genome_string = " ".join(ref_genome_ls)
-        organism_name_string = " ".join(organism_name)
-        rpl_ls_str = " ".join(rpl_ls)
-        commands = []
-        print(len(fastas_fwd))
-        ls_fwd = fastas_fwd_ls
-        sort_ls_fwd = sorted(fastas_fwd_ls)
-        sort_ls_rv = sorted(fastas_rv_ls)
-        print(fastas_fwd_ls)
-        print(ls_fwd)
-        print(len(ls_fwd))
-        i = 0
-        while i < len(ls_fwd):
-            command = f'split_pooledSeqWGS_parallel.py --fastq1 {sort_ls_fwd[i]} --fastq2 {sort_ls_rv[i]} --outdir {output_dir} --refGenomes {ref_genome_string} --sampleNames {organism_name_string} --trheads {num_of_threads} --nreads_per_chunk {reads_per_chunk} --replace {rpl_ls_str} --skip_removing_tmp_files {skip_removing_tmp_files} --wit_db {wit_db}'
-            print(command)
-            commands.append(command)
-            i += 1
-        print(commands)
-        data = {'command':commands}
-        if fastas_rv_ls == [] or fastas_fwd_ls == [] or output_dir == "" or ref_genome_string == "" or organism_name_string == "" or store_com == "":
-            data = "please fill all the fields"
-            return render_template('demultiplexing_batch.html',data=data)
-        else:
+            print("No getoption")
+            for line in lines:
+                if line.startswith("ref_genome="):
+                    ref_genome_list.append(line.split('=')[1].rstrip())
+                elif line.startswith("organism_name="):
+                    organism_name_list.append(line.split('=')[1].rstrip())
+                elif line.startswith("path_files="):
+                    path_files_list.append(line.split("=")[1].rstrip())
+                elif line.startswith("fastas="):
+                    fastas.append(line.split("=")[1].rstrip())
+                elif line.startswith("output_dir="):
+                    output_dir = line.split("=")[1].rstrip()
+                elif line.startswith("path_file="):
+                    path_file = line.split("=")[1].rstrip()
+                elif line.startswith("path_file_unique="):
+                    path_file_unique = line.split("=")[1].rstrip()
+                elif line.startswith("num_of_threads="):
+                    num_of_threads = line.split("=")[1].rstrip()
+                elif line.startswith("reads_per_chunk="):
+                    reads_per_chunk = line.split("=")[1].rstrip()
+                elif line.startswith("replace="):
+                    replace = line.split("=")[1].rstrip()
+                elif line.startswith("skip_removing_tmp_files=True"):
+                    skip_removing_tmp_files = line.split("=")[1].rstrip()
+                elif line.startswith("wit_db="):
+                    wit_db = line.split("=")[1].rstrip()
+                elif line.startswith("getoption="):
+                    getoption = line.split("=")[1].rstrip()
+                elif line.startswith("store_com="):
+                    store_com = line.split("=")[1].rstrip()
+
+        fastas_forward = []
+        fastas_reversed = []
+        reg = r'[12].{1,3}fast'
+
+        for fasta in fastas:
+            if chck(fasta):
+               matched = re.search(reg, fasta)
+               if matched:
+                    if "1" in matched.group():
+                        fastas_forward.append(fasta)
+                    elif "2" in matched.group():
+                        fastas_reversed.append(fasta)
+        fastas_fwd = sorted(fastas_forward)
+        fastas_rv = sorted(fastas_reversed)
+
+
+        if have_getoption and fastas_fwd != [] and fastas_rv != [] and output_dir != "" and path_file != "" and ref_genome_list != [] and organism_name_list != [] and store_com != "" and path_file_unique != "":
+            ref_gen_l = []
+            path_fasta_fwd = []
+            path_fasta_rv = []
+            for fasta in fastas_fwd:
+                path_fasta_fwd.append(os.path.join(path_file,fasta))
+            for fasta in fastas_rv:
+                path_fasta_rv.append(os.path.join(path_file,fasta))            
+            for gen in ref_genome_list:
+                gen = os.path.join(path_file_unique,gen)
+                ref_gen_l.append(gen)
+            ref_genome_string = " ".join(ref_gen_l)
+            organism_name_string = " ".join(organism_name_list)
+            rpl_ls_str = replace
+            i = 0
+            commands = []
+            while i < len(path_fasta_fwd):
+                command = f'split_pooledSeqWGS_parallel.py --fastq1 {path_fasta_fwd[i]} --fastq2 {path_fasta_rv[i]} --outdir {output_dir} --refGenomes {ref_genome_string} --sampleNames {organism_name_string} --trheads {num_of_threads} --nreads_per_chunk {reads_per_chunk} --replace {rpl_ls_str} --skip_removing_tmp_files {skip_removing_tmp_files} --wit_db {wit_db}'
+                print(command)
+                commands.append(command)
+                i = i + 1
             ssh = paramiko.SSHClient()
             ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             ssh.connect(hostname=host, username=username, password=password)
@@ -277,8 +325,49 @@ def demultiplexing_batch():
             output = stdout.readlines()
             error = stderr.readlines()
             ssh.close()
+            data = {'command':commands}
             return render_template('commands.html',data=data)
-    return render_template('demultiplexing_batch.html')
+        elif fastas_fwd != [] and fastas_rv != [] and output_dir != "" and path_file != "" and ref_genome_list != [] and organism_name_list != [] and store_com != "" and path_files_list != "" :
+            ref_gen_ls = []
+            print(ref_genome_list)
+            print(organism_name_list)
+            print(path_files_list)
+            # fastas_fs_ls_string = os.path.join(path_file,fastas_fwd)
+            # fastas_rv_ls_string = os.path.join(path_file,fastas_rv)
+            path_fasta_wd = []
+            path_fasta_rv = []
+            for fasta in fastas_fwd:
+                path_fasta_wd.append(os.path.join(path_file,fasta))
+            for fasta in fastas_rv:
+                path_fasta_rv.append(os.path.join(path_file,fasta))   
+            for path,gen_ref in zip(path_files_list,ref_genome_list):
+                ref_gen_ls.append(os.path.join(path,gen_ref))
+            organism_name_string = " ".join(organism_name_list)
+            ref_genome_string = " ".join(ref_gen_ls)
+            rpl_ls_str = replace
+            i = 0
+            commands = []
+            while i < len(path_fasta_fwd):
+                command = f'split_pooledSeqWGS_parallel.py --fastq1 {path_fasta_fwd[i]} --fastq2 {path_fasta_rv[i]} --outdir {output_dir} --refGenomes {ref_genome_string} --sampleNames {organism_name_string} --trheads {num_of_threads} --nreads_per_chunk {reads_per_chunk} --replace {rpl_ls_str} --skip_removing_tmp_files {skip_removing_tmp_files} --wit_db {wit_db}'
+                print(command)
+                commands.append(command)
+                i = i + 1
+            ssh = paramiko.SSHClient()
+            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            ssh.connect(hostname=host, username=username, password=password)
+            stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}demultiplexingbatch.sh')
+            stdin, stdout, stderr = ssh.exec_command(f'echo "#!/bin/bash" > {store_com}demultiplexingbatch.sh')           
+            for com in commands:       
+                # stdin, stdout, stderr = ssh.exec_command(f'echo {com} >> {store_com}demultiplexingbatch.txt')
+                stdin, stdout, stderr = ssh.exec_command(f'echo {com} >> {store_com}demultiplexingbatch.sh')               
+            output = stdout.readlines()
+            error = stderr.readlines()
+            ssh.close()
+            data = {'command':commands}
+            return render_template('commands.html',data=data)
+        else:
+            return render_template('demultiplexing.html',data="Please fill all the fields")
+    return render_template('demultiplexing.html')
 
 # Show the Crossmaper page
 @app.route('/crossmaper')
