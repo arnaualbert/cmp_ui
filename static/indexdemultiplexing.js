@@ -8,6 +8,56 @@ document.addEventListener("DOMContentLoaded", function () {
         options.style.display = "none";
     }
 
+    // var input = document.getElementById('toggleswitch');
+    // var outputtext = document.getElementById('status');
+
+    // input.addEventListener('change',function(){
+    //     if(this.checked) {
+    //         outputtext.innerHTML = "aktiv";
+    //         console.log("aktiv")
+    //     } else {
+    //         outputtext.innerHTML = "inaktiv";
+    //         console.log("inaktiv")
+    //     }
+    // });
+
+
+
+
+
+    var input = document.getElementById('getoption');
+    // var outputtext = document.getElementById('status');
+    var yes = document.getElementById("yes");
+    var no = document.getElementById("no");
+    var yespath = document.querySelectorAll("#yespath");
+    var nopath = document.querySelectorAll("#nopath");
+    input.addEventListener('change',function(){
+        if(this.checked) {
+            no.style.display = "none";
+            yes.style.display = "block";
+            for (let i = 0; i < yespath.length; i++) {
+                yespath[i].style.display = "block";
+            }
+            for (let i = 0; i < nopath.length; i++) {
+                nopath[i].style.display = "none";
+            }
+        } else {
+            no.style.display = "block";
+            yes.style.display = "none";
+            for (let i = 0; i < yespath.length; i++) {
+                yespath[i].style.display = "none";
+            }
+            for (let i = 0; i < nopath.length; i++) {
+                nopath[i].style.display = "block";
+            }
+            // yespath.style.display = "none"
+            console.log("no")
+        }
+    });
+    // var getoption = document.getElementById("getoption");
+    // // getoption.addEventListener("click", pathquestion);
+    // getoption.addEventListener("change", console.log(getoption.value,"HOLA"));
+
 })
 
 // when the button is clicked hide all the optional arguments if they are present or show all the optional arguments if they are not shown

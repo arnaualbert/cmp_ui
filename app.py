@@ -174,6 +174,8 @@ def demultiplexing():
             stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}demultiplexing.sh;echo "#!/bin/bash" > {store_com}demultiplexing.sh; echo {command} >> {store_com}demultiplexing.sh')
             output = stdout.readlines()
             error = stderr.readlines()
+            data = {'command':command}
+            return render_template('command.html',data=data)
         elif fastas_fwd != "" and fastas_rv != "" and output_dir != "" and path_file != "" and ref_genome_list != [] and organism_name_list != [] and store_com != "" and path_files_list != "" :
             ref_gen_ls = []
             print(ref_genome_list)
@@ -194,6 +196,8 @@ def demultiplexing():
             stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}demultiplexing.sh;echo "#!/bin/bash" > {store_com}demultiplexing.sh; echo {command} >> {store_com}demultiplexing.sh')
             output = stdout.readlines()
             error = stderr.readlines()
+            data = {'command':command}
+            return render_template('command.html',data=data)
         else:
             return render_template('demultiplexing.html',data="Please fill all the fields")
         return render_template('command.html',data=data)

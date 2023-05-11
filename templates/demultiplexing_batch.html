@@ -69,9 +69,13 @@
                         <p>Batch Mode</p>
                     </div>
                     <div class="col form-check form-switch">
-                        <input class="form-check-input" type="checkbox" role="switch" id="getoption" name="getoption"
+                        <!-- <input class="form-check-input" type="checkbox" role="switch" id="getoption" name="getoption" -->
+                            <!-- onclick="window.location.href='/demultiplexing'" checked> -->
+                            <input class="form-check-input" type="checkbox" role="switch" name="batchmode"
                             onclick="window.location.href='/demultiplexing'" checked>
-                        <p id="yes">Yes</p>
+
+                        <!-- <p id="yes">Yes</p> -->
+                        <p>Yes</p>
                     </div>
                 </div>
                 <hr class="border border-secondary border-2 opacity-75">
@@ -81,9 +85,11 @@
                             <p>Is the same path for all the reference genome?</p>
                         </div>
                         <div class="col form-check form-switch">
-                            <input class="form-check-input" type="checkbox" role="switch" id="getoption"
-                                name="getoption" onclick="pathquestion()" checked>
-                            <p id="yes">Yes</p>
+                            <!-- <input class="form-check-input" type="checkbox" role="switch" id="getoption"
+                                name="getoption" onclick="pathquestion()" checked> -->
+                                <input class="form-check-input" type="checkbox" role="switch" id="getoption"
+                                name="getoption" checked>
+                                <p id="yes">Yes</p>
                             <p id="no" style="display:none">No</p>
                         </div>
                         <div class="col" id="yespath">
