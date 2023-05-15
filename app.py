@@ -17,6 +17,8 @@ DEMULTIPLEXING_FOLDER = os.path.join(path, 'demultiplexing')
 FWD_FOLDER = os.path.join(path, 'demultiplexing/fwd')
 RV_FOLDER = os.path.join(path, 'demultiplexing/rv')
 
+# COMMANDS_FILES = os.path.join(path, 'demultiplexing/commands.txt')
+
 if not os.path.isdir(DEMULTIPLEXING_FOLDER):
     os.mkdir(DEMULTIPLEXING_FOLDER)
 
@@ -29,6 +31,7 @@ if not os.path.isdir(RV_FOLDER):
 app.config['DEMULTIPLEXING_FOLDER'] = DEMULTIPLEXING_FOLDER
 app.config['DEMULTIPLEXING_FWD_FOLDER'] = FWD_FOLDER
 app.config['DEMULTIPLEXING_RV_FOLDER'] = RV_FOLDER
+# app.config['COMMAND_FILE'] = DEMULTIPLEXING_FOLDER
 
 # ALLOWED_EXTENSIONS = set(['*fasta.*','fastaq.gz','gz','fq.gz','*fq.*','*','.fasta','fasta','fastq.gz'])
 # ALLOWED_EXTENSIONS = set(['fastaq','.fastaq','.fastq','*fasta.*','fastaq.gz','gz','fq.gz','*fq.*','*','.fasta','fasta','fastq.gz'])
@@ -85,9 +88,6 @@ def demultiplexing():
         organism_name_list = []
         path_files_list=[]
         lines = data.strip().split('\n')
-        print(len(data))
-        print(type(lines))
-        print(lines)
         have_getoption = "getoption=on\r" in lines
 
         if have_getoption:
@@ -167,7 +167,6 @@ def demultiplexing():
             organism_name_string = " ".join(organism_name_list)
             rpl_ls_str = replace
             command = f'split_pooledSeqWGS_parallel.py --fastq1 {fastas_fs_ls_string} --fastq2 {fastas_rv_ls_string} --outdir {output_dir} --refGenomes {ref_genome_string} --sampleNames {organism_name_string} --trheads {num_of_threads} --nreads_per_chunk {reads_per_chunk} --replace {rpl_ls_str} --skip_removing_tmp_files {skip_removing_tmp_files} --wit_db {wit_db}'
-            print(command)
             ssh = paramiko.SSHClient()
             ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             ssh.connect(hostname=host, username=username, password=password)
@@ -178,9 +177,6 @@ def demultiplexing():
             return render_template('command.html',data=data)
         elif fastas_fwd != "" and fastas_rv != "" and output_dir != "" and path_file != "" and ref_genome_list != [] and organism_name_list != [] and store_com != "" and path_files_list != "" :
             ref_gen_ls = []
-            print(ref_genome_list)
-            print(organism_name_list)
-            print(path_files_list)
             fastas_fs_ls_string = os.path.join(path_file,fastas_fwd)
             fastas_rv_ls_string = os.path.join(path_file,fastas_rv)
             for path,gen_ref in zip(path_files_list,ref_genome_list):
@@ -284,15 +280,25 @@ def demultiplexing_batch():
         fastas_forward = []
         fastas_reversed = []
         reg = r'[12].{1,3}fast'
-
+        reg_r1 = r'.*R1.*|.*r1.*'
+        compile_reg_r1 = re.compile(reg_r1)
+        reg_r2 = r'.*R2.*|.*r2.*'
+        compile_reg_r2 = re.compile(reg_r2)
         for fasta in fastas:
+            print(fasta)
+            print(type(fasta))
             if chck(fasta):
-               matched = re.search(reg, fasta)
-               if matched:
+                matched = re.search(reg, fasta)
+                if compile_reg_r1.match(fasta):
+                    fastas_forward.append(fasta)
+                elif compile_reg_r2.match(fasta):
+                    fastas_reversed.append(fasta)
+                elif matched:
                     if "1" in matched.group():
                         fastas_forward.append(fasta)
                     elif "2" in matched.group():
                         fastas_reversed.append(fasta)
+
         fastas_fwd = sorted(fastas_forward)
         fastas_rv = sorted(fastas_reversed)
 
@@ -314,20 +320,31 @@ def demultiplexing_batch():
             commands = []
             while i < len(path_fasta_fwd):
                 command = f'split_pooledSeqWGS_parallel.py --fastq1 {path_fasta_fwd[i]} --fastq2 {path_fasta_rv[i]} --outdir {output_dir} --refGenomes {ref_genome_string} --sampleNames {organism_name_string} --trheads {num_of_threads} --nreads_per_chunk {reads_per_chunk} --replace {rpl_ls_str} --skip_removing_tmp_files {skip_removing_tmp_files} --wit_db {wit_db}'
-                print(command)
+                # print(command)
                 commands.append(command)
                 i = i + 1
-            ssh = paramiko.SSHClient()
-            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            ssh.connect(hostname=host, username=username, password=password)
-            stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}demultiplexingbatch.sh')
-            stdin, stdout, stderr = ssh.exec_command(f'echo "#!/bin/bash" > {store_com}demultiplexingbatch.sh')           
-            for com in commands:       
-                # stdin, stdout, stderr = ssh.exec_command(f'echo {com} >> {store_com}demultiplexingbatch.txt')
-                stdin, stdout, stderr = ssh.exec_command(f'echo {com} >> {store_com}demultiplexingbatch.sh')               
-            output = stdout.readlines()
-            error = stderr.readlines()
-            ssh.close()
+
+            with open(os.path.join(DEMULTIPLEXING_FOLDER,"batchmode.sh"), 'w') as f:
+                f.write(f'#!/bin/bash\n')
+                for com in commands:
+                    f.write(f'{com}\n')
+
+            try:
+                ssh = paramiko.SSHClient()
+                ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+                ssh.connect(hostname=host, username=username, password=password)
+
+                sftp = ssh.open_sftp()
+                sftp.put(os.path.join(DEMULTIPLEXING_FOLDER, "batchmode.sh"), store_com + "/batchmode.sh")
+                sftp.close()
+                ssh.close()
+                os.remove(os.path.join(DEMULTIPLEXING_FOLDER, "batchmode.sh"))
+            except paramiko.AuthenticationException:
+                print("Authentication failed. Please check your credentials.")
+            except paramiko.SSHException as ssh_exception:
+                print(f"SSH connection failed: {str(ssh_exception)}")
+            except Exception as e:
+                print(f"An error occurred: {str(e)}")
             data = {'command':commands}
             return render_template('commands.html',data=data)
         elif fastas_fwd != [] and fastas_rv != [] and output_dir != "" and path_file != "" and ref_genome_list != [] and organism_name_list != [] and store_com != "" and path_files_list != "" :
@@ -350,17 +367,27 @@ def demultiplexing_batch():
                 print(command)
                 commands.append(command)
                 i = i + 1
-            ssh = paramiko.SSHClient()
-            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            ssh.connect(hostname=host, username=username, password=password)
-            stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}demultiplexingbatch.sh')
-            stdin, stdout, stderr = ssh.exec_command(f'echo "#!/bin/bash" > {store_com}demultiplexingbatch.sh')           
-            for com in commands:       
-                # stdin, stdout, stderr = ssh.exec_command(f'echo {com} >> {store_com}demultiplexingbatch.txt')
-                stdin, stdout, stderr = ssh.exec_command(f'echo {com} >> {store_com}demultiplexingbatch.sh')               
-            output = stdout.readlines()
-            error = stderr.readlines()
-            ssh.close()
+            with open(os.path.join(DEMULTIPLEXING_FOLDER,"batchmode.sh"), 'w') as f:
+                f.write(f'#!/bin/bash\n')
+                for com in commands:
+                    f.write(f'{com}\n')
+
+            try:
+                ssh = paramiko.SSHClient()
+                ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+                ssh.connect(hostname=host, username=username, password=password)
+
+                sftp = ssh.open_sftp()
+                sftp.put(os.path.join(DEMULTIPLEXING_FOLDER, "batchmode.sh"), store_com + "/batchmode.sh")
+                sftp.close()
+                ssh.close()
+                os.remove(os.path.join(DEMULTIPLEXING_FOLDER, "batchmode.sh"))
+            except paramiko.AuthenticationException:
+                print("Authentication failed. Please check your credentials.")
+            except paramiko.SSHException as ssh_exception:
+                print(f"SSH connection failed: {str(ssh_exception)}")
+            except Exception as e:
+                print(f"An error occurred: {str(e)}")
             data = {'command':commands}
             return render_template('commands.html',data=data)
         else:
