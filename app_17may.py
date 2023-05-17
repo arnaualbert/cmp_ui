@@ -167,35 +167,12 @@ def demultiplexing():
             organism_name_string = " ".join(organism_name_list)
             rpl_ls_str = replace
             command = f'split_pooledSeqWGS_parallel.py --fastq1 {fastas_fs_ls_string} --fastq2 {fastas_rv_ls_string} --outdir {output_dir} --refGenomes {ref_genome_string} --sampleNames {organism_name_string} --trheads {num_of_threads} --nreads_per_chunk {reads_per_chunk} --replace {rpl_ls_str} --skip_removing_tmp_files {skip_removing_tmp_files} --wit_db {wit_db}'
-            with open(os.path.join(DEMULTIPLEXING_FOLDER,"demultiplexing.sh"), 'w') as f:
-                f.write(f"""#!/bin/bash
-#SBATCH --job-name=multiplex.1
-#SBATCH --chdir=/gpfs/projects/bsc40/project/pipelines/multiplex/jobs/
-#SBATCH --output=/gpfs/projects/bsc40/project/pipelines/multiplex/jobs/%j.out
-#SBATCH --error=/gpfs/projects/bsc40/project/pipelines/multiplex/jobs/%j.err
-#SBATCH --time=0:30:00
-#SBATCH --ntasks=1
-#SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=24
-#SBATCH --qos=debug
-{command}
-                        """)    
-            try:
-                ssh = paramiko.SSHClient()
-                ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-                ssh.connect(hostname=host, username=username, password=password)
-
-                sftp = ssh.open_sftp()
-                sftp.put(os.path.join(DEMULTIPLEXING_FOLDER, "demultiplexing.sh"), store_com + "/demultiplexing.sh")
-                sftp.close()
-                ssh.close()
-                os.remove(os.path.join(DEMULTIPLEXING_FOLDER, "demultiplexing.sh"))
-            except paramiko.AuthenticationException:
-                print("Authentication failed. Please check your credentials.")
-            except paramiko.SSHException as ssh_exception:
-                print(f"SSH connection failed: {str(ssh_exception)}")
-            except Exception as e:
-                print(f"An error occurred: {str(e)}")
+            ssh = paramiko.SSHClient()
+            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            ssh.connect(hostname=host, username=username, password=password)
+            stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}demultiplexing.sh;echo "#!/bin/bash" > {store_com}demultiplexing.sh; echo {command} >> {store_com}demultiplexing.sh')
+            output = stdout.readlines()
+            error = stderr.readlines()
             data = {'command':command}
             return render_template('command.html',data=data)
         elif fastas_fwd != "" and fastas_rv != "" and output_dir != "" and path_file != "" and ref_genome_list != [] and organism_name_list != [] and store_com != "" and path_files_list != "" :
@@ -209,35 +186,12 @@ def demultiplexing():
             rpl_ls_str = replace
             command = f'split_pooledSeqWGS_parallel.py --fastq1 {fastas_fs_ls_string} --fastq2 {fastas_rv_ls_string} --outdir {output_dir} --refGenomes {ref_genome_string} --sampleNames {organism_name_string} --trheads {num_of_threads} --nreads_per_chunk {reads_per_chunk} --replace {rpl_ls_str} --skip_removing_tmp_files {skip_removing_tmp_files} --wit_db {wit_db}'
             print(command)
-            with open(os.path.join(DEMULTIPLEXING_FOLDER,"demultiplexing.sh"), 'w') as f:
-                f.write(f"""#!/bin/bash
-#SBATCH --job-name=multiplex.1
-#SBATCH --chdir=/gpfs/projects/bsc40/project/pipelines/multiplex/jobs/
-#SBATCH --output=/gpfs/projects/bsc40/project/pipelines/multiplex/jobs/%j.out
-#SBATCH --error=/gpfs/projects/bsc40/project/pipelines/multiplex/jobs/%j.err
-#SBATCH --time=0:30:00
-#SBATCH --ntasks=1
-#SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=24
-#SBATCH --qos=debug
-{command}
-                        """)    
-            try:
-                ssh = paramiko.SSHClient()
-                ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-                ssh.connect(hostname=host, username=username, password=password)
-
-                sftp = ssh.open_sftp()
-                sftp.put(os.path.join(DEMULTIPLEXING_FOLDER, "demultiplexing.sh"), store_com + "/demultiplexing.sh")
-                sftp.close()
-                ssh.close()
-                os.remove(os.path.join(DEMULTIPLEXING_FOLDER, "demultiplexing.sh"))
-            except paramiko.AuthenticationException:
-                print("Authentication failed. Please check your credentials.")
-            except paramiko.SSHException as ssh_exception:
-                print(f"SSH connection failed: {str(ssh_exception)}")
-            except Exception as e:
-                print(f"An error occurred: {str(e)}")
+            ssh = paramiko.SSHClient()
+            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            ssh.connect(hostname=host, username=username, password=password)
+            stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}demultiplexing.sh;echo "#!/bin/bash" > {store_com}demultiplexing.sh; echo {command} >> {store_com}demultiplexing.sh')
+            output = stdout.readlines()
+            error = stderr.readlines()
             data = {'command':command}
             return render_template('command.html',data=data)
         else:
@@ -391,10 +345,10 @@ def demultiplexing_batch():
                 ssh.connect(hostname=host, username=username, password=password)
 
                 sftp = ssh.open_sftp()
-                sftp.put(os.path.join(DEMULTIPLEXING_FOLDER, "demultiplexing.sh"), store_com + "/demultiplexing.sh")
+                sftp.put(os.path.join(DEMULTIPLEXING_FOLDER, "batchmode.sh"), store_com + "/batchmode.sh")
                 sftp.close()
                 ssh.close()
-                os.remove(os.path.join(DEMULTIPLEXING_FOLDER, "demultiplexing.sh"))
+                # os.remove(os.path.join(DEMULTIPLEXING_FOLDER, "batchmode.sh"))
             except paramiko.AuthenticationException:
                 print("Authentication failed. Please check your credentials.")
             except paramiko.SSHException as ssh_exception:
@@ -424,6 +378,7 @@ def demultiplexing_batch():
                 commands.append(command)
                 i = i + 1
             with open(os.path.join(DEMULTIPLEXING_FOLDER,"demultiplexing.sh"), 'w') as f:
+                # f.write(f'#!/bin/bash\n')
                 f.write("""#!/bin/bash
 #SBATCH --job-name=multiplex.1
 #SBATCH --chdir=/gpfs/projects/bsc40/project/pipelines/multiplex/jobs/
@@ -444,10 +399,10 @@ def demultiplexing_batch():
                 ssh.connect(hostname=host, username=username, password=password)
 
                 sftp = ssh.open_sftp()
-                sftp.put(os.path.join(DEMULTIPLEXING_FOLDER, "demultiplexing.sh"), store_com + "/demultiplexing.sh")
+                sftp.put(os.path.join(DEMULTIPLEXING_FOLDER, "batchmode.sh"), store_com + "/batchmode.sh")
                 sftp.close()
                 ssh.close()
-                os.remove(os.path.join(DEMULTIPLEXING_FOLDER, "demultiplexing.sh"))
+                os.remove(os.path.join(DEMULTIPLEXING_FOLDER, "batchmode.sh"))
             except paramiko.AuthenticationException:
                 print("Authentication failed. Please check your credentials.")
             except paramiko.SSHException as ssh_exception:
