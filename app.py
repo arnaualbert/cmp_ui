@@ -746,7 +746,11 @@ def crossmaperrna():
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=48
 #SBATCH --qos=debug
-{command}""") 
+
+module load ANACONDA/5.0.1
+source /gpfs/projects/bsc40/project/pipelines/anaconda3/etc/profile.d/conda.sh
+conda activate crossmapper_v111
+{command}""")  
                 try:
                     ssh = paramiko.SSHClient()
                     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -758,7 +762,7 @@ def crossmaperrna():
                     print(store_com)
                     sftp.put(os.path.join(CROSSMAPER_FOLDER,"crossmaper.sh"), store_com + "/crossmaper.sh")
                     sftp.close()
-                    stdin,stdout, stderr = ssh.exec_command(f"cat {store_com}/crossmaper.sh")
+                    stdin,stdout, stderr = ssh.exec_command(f"sbatch {store_com}/crossmaper.sh")
                     print(stdout.readlines())
                     ssh.close()
                     os.remove(os.path.join(CROSSMAPER_FOLDER,"crossmaper.sh"))
@@ -797,7 +801,11 @@ def crossmaperrna():
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=48
 #SBATCH --qos=debug
-{command}""") 
+
+module load ANACONDA/5.0.1
+source /gpfs/projects/bsc40/project/pipelines/anaconda3/etc/profile.d/conda.sh
+conda activate crossmapper_v111
+{command}""")  
                 try:
                     ssh = paramiko.SSHClient()
                     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
