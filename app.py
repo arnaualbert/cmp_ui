@@ -571,6 +571,8 @@ def crossmaperdna():
                     print(store_com)
                     sftp.put(os.path.join(CROSSMAPER_FOLDER,"crossmaper.sh"), store_com + "/crossmaper.sh")
                     sftp.close()
+                    stdin,stdout, stderr = ssh.exec_command(f"sbatch {store_com}/crossmaper.sh")
+                    print(stdout.readlines())
                     ssh.close()
                     os.remove(os.path.join(CROSSMAPER_FOLDER,"crossmaper.sh"))
                     data = {'command':command}
@@ -617,6 +619,8 @@ def crossmaperdna():
                     print(store_com)
                     sftp.put(os.path.join(CROSSMAPER_FOLDER,"crossmaper.sh"), store_com + "/crossmaper.sh")
                     sftp.close()
+                    stdin,stdout, stderr = ssh.exec_command(f"sbatch {store_com}/crossmaper.sh")
+                    print(stdout.readlines())
                     ssh.close()
                     os.remove(os.path.join(CROSSMAPER_FOLDER,"crossmaper.sh"))
                     data = {'command':command}
@@ -817,6 +821,8 @@ conda activate crossmapper_v111
                     print(store_com)
                     sftp.put(os.path.join(CROSSMAPER_FOLDER,"crossmaper.sh"), store_com + "/crossmaper.sh")
                     sftp.close()
+                    stdin,stdout, stderr = ssh.exec_command(f"sbatch {store_com}/crossmaper.sh")
+                    print(stdout.readlines())
                     ssh.close()
                     os.remove(os.path.join(CROSSMAPER_FOLDER,"crossmaper.sh"))
                     data = {'command':command}
