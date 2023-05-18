@@ -4,7 +4,7 @@ import os
 import re
 import paramiko
 from threading import Thread
-
+import random
 module_name = __name__
 app = Flask(__name__)
 
@@ -156,7 +156,7 @@ def demultiplexing():
                     getoption = line.split("=")[1].rstrip()
                 elif line.startswith("store_com="):
                     store_com = line.split("=")[1].rstrip()
-
+        id = random.randint(1,100000)
         if have_getoption and fastas_fwd != "" and fastas_rv != "" and output_dir != "" and path_file != "" and ref_genome_list != [] and organism_name_list != [] and store_com != "" and path_file_unique != "":
             ref_gen_l = []
             fastas_fs_ls_string = os.path.join(path_file,fastas_fwd)
@@ -170,7 +170,7 @@ def demultiplexing():
             command = f'split_pooledSeqWGS_parallel.py --fastq1 {fastas_fs_ls_string} --fastq2 {fastas_rv_ls_string} --outdir {output_dir} --refGenomes {ref_genome_string} --sampleNames {organism_name_string} --trheads {num_of_threads} --nreads_per_chunk {reads_per_chunk} --replace {rpl_ls_str} --skip_removing_tmp_files {skip_removing_tmp_files} --wit_db {wit_db}'
             with open(os.path.join(DEMULTIPLEXING_FOLDER,"demultiplexing.sh"), 'w') as f:
                 f.write(f"""#!/bin/bash
-#SBATCH --job-name=multiplex.1
+#SBATCH --job-name=multiplex.{id}
 #SBATCH --chdir=/gpfs/projects/bsc40/project/pipelines/multiplex/jobs/
 #SBATCH --output=/gpfs/projects/bsc40/project/pipelines/multiplex/jobs/%j.out
 #SBATCH --error=/gpfs/projects/bsc40/project/pipelines/multiplex/jobs/%j.err
@@ -210,7 +210,7 @@ def demultiplexing():
             print(command)
             with open(os.path.join(DEMULTIPLEXING_FOLDER,"demultiplexing.sh"), 'w') as f:
                 f.write(f"""#!/bin/bash
-#SBATCH --job-name=multiplex.1
+#SBATCH --job-name=multiplex.{id}
 #SBATCH --chdir=/gpfs/projects/bsc40/project/pipelines/multiplex/jobs/
 #SBATCH --output=/gpfs/projects/bsc40/project/pipelines/multiplex/jobs/%j.out
 #SBATCH --error=/gpfs/projects/bsc40/project/pipelines/multiplex/jobs/%j.err
@@ -342,6 +342,7 @@ def demultiplexing_batch():
 
         fastas_fwd = sorted(fastas_forward)
         fastas_rv = sorted(fastas_reversed)
+        id = random.randint(1,100000)
         if have_getoption and fastas_fwd != [] and fastas_rv != [] and output_dir != "" and path_file != "" and ref_genome_list != [''] and organism_name_list != [''] and store_com != "" and path_file_unique != "":
             ref_gen_l = []
             path_fasta_fwd = []
@@ -366,7 +367,7 @@ def demultiplexing_batch():
             ntask = len(commands)
             with open(os.path.join(DEMULTIPLEXING_FOLDER,"demultiplexing.sh"), 'w') as f:
                 f.write(f"""#!/bin/bash
-#SBATCH --job-name=multiplex.1
+#SBATCH --job-name=multiplex.{id}
 #SBATCH --chdir=/gpfs/projects/bsc40/project/pipelines/multiplex/jobs/
 #SBATCH --output=/gpfs/projects/bsc40/project/pipelines/multiplex/jobs/%j.out
 #SBATCH --error=/gpfs/projects/bsc40/project/pipelines/multiplex/jobs/%j.err
@@ -419,7 +420,7 @@ def demultiplexing_batch():
             ntask = len(commands)
             with open(os.path.join(DEMULTIPLEXING_FOLDER,"demultiplexing.sh"), 'w') as f:
                 f.write(f"""#!/bin/bash
-#SBATCH --job-name=multiplex.1
+#SBATCH --job-name=multiplex.{id}
 #SBATCH --chdir=/gpfs/projects/bsc40/project/pipelines/multiplex/jobs/
 #SBATCH --output=/gpfs/projects/bsc40/project/pipelines/multiplex/jobs/%j.out
 #SBATCH --error=/gpfs/projects/bsc40/project/pipelines/multiplex/jobs/%j.err
@@ -474,89 +475,172 @@ def crossmaperdna():
     if request.method == 'GET' and is_logged():
         return render_template('crossmaperdna.html')
     if request.method == 'POST' and is_logged():
-        # path_file = request.form['path_file']
-        path_file = request.form.getlist('path_file')
-        fastq = request.files.getlist("fastaq")
-        fastq_ls = []
-        # NEW
-        list_files = []
-        #####
-        ##old
-        # for f in fastq:
-            # fastq_ls.append(path_file+f.filename)
-        ###
-        ### NEW VERSION 
-        for f in fastq:
-            fastq_ls.append(f.filename)
-        ###
-        # NEW
-        for path,file in zip(path_file,fastq_ls):
-            list_files.append(os.path.join(path,file))
-        print(list_files)
-        #####
-        genome_name = request.form.getlist('genome_name')
-        number_of_reads = request.form.getlist('number_of_reads')
-        read_length = request.form.getlist('read_length')
-        read_configuration = request.form['read_configuration']
-        number_of_cores = request.form['number_of_cores']
-        base_error_rate = request.form['base_error_rate']
-        oouter_distance = request.form['outer_distance']
-        standar_deviation = request.form['standar_deviation']
-        coverage = request.form['coverage']
-        mutation_rate = request.form['mutation_rate']
-        indel_fraction = request.form['indel_fraction']
-        indel_extended = request.form['indel_extended']
-        seed_random_generator = request.form['seed_random_generator']
-        discard_ambiguos = request.form['discard_ambiguos']
-        haplotype_mode = request.form['haplotype_mode']
-        output_directory = request.form['output_directory']
-        verbose_mode = request.form['verbose_mode']
-        group_bar_chart = request.form['group_bar_chart']
-        report_cross_mapped = request.form['report_cross_mapped']
-        mapper_template_path = request.form['mapper_template_path']
-        min_seed_length = request.form['min_seed_length']
-        matching_score = request.form['matching_score']
-        missmatch_penalty = request.form['mismatch_penalty']
-        store_com = request.form['store_com']
-        # NEW
-        list_files_string = " ".join(list_files)
-        #####
-        # fastq_ls_string = " ".join(fastq_ls)
-        genome_name_string = " ".join(genome_name)
-        number_of_reads_string = " ".join(number_of_reads)
-        read_length_string = ",".join(read_length)
-        # command = f"crossmapper DNA -g {fastq_ls_string} -gn {genome_name_string} -rlen {read_length_string} -rlay {read_configuration} -N {number_of_reads_string} -t {number_of_cores} -e {base_error_rate} -d {oouter_distance} -s {standar_deviation} -C {coverage} -r {mutation_rate} -R {indel_fraction} -X {indel_extended} -S {seed_random_generator} -AMB {discard_ambiguos} -hapl {haplotype_mode} -o {output_directory} --verbose {verbose_mode} -gb {group_bar_chart} -rc {report_cross_mapped} --mapper-template {mapper_template_path} -k {min_seed_length} -A {matching_score} -B {missmatch_penalty}"
-        # command = f"crossmapper DNA -g {list_files_string} -gn {genome_name_string} -rlen {read_length_string} -rlay {read_configuration} -N {number_of_reads_string} -t {number_of_cores} -e {base_error_rate} -d {oouter_distance} -s {standar_deviation} -C {coverage} -r {mutation_rate} -R {indel_fraction} -X {indel_extended} -S {seed_random_generator} -AMB {discard_ambiguos} -hapl {haplotype_mode} -o {output_directory} --verbose {verbose_mode} -gb {group_bar_chart} -rc {report_cross_mapped} --mapper-template {mapper_template_path} -k {min_seed_length} -A {matching_score} -B {missmatch_penalty}"
-        if list_files == [''] or genome_name == [''] or store_com == "" or number_of_reads == ['']:
-            data = 'Please fill all the fields'
-            return render_template('crossmaperdna.html', data=data)
-        else:
+        data = request.get_data(as_text=True)
+        # print(data)
+        lines = data.strip().split('\n')
+        fastaq_list = []
+        genome_name_list = []
+        number_of_reads_list = []
+        path_file_list = []
+        read_len_list = []
+        for line in lines:
+            if line.startswith("fastaq="):
+                fastaq_list.append(line.split('=')[1].rstrip())
+            elif line.startswith("genome_name="):
+                genome_name_list.append(line.split('=')[1].rstrip())
+            elif line.startswith("number_of_reads="):
+                number_of_reads_list.append(line.split('=')[1].rstrip())
+            elif line.startswith("path_file="):
+                path_file_list.append(line.split('=')[1].rstrip())
+            elif line.startswith("read_length="):
+                read_len_list.append(line.split('=')[1].rstrip())
+            elif line.startswith("read_configuration="):
+                read_configuration = line.split('=')[1].rstrip()
+            elif line.startswith("number_of_cores="):
+                number_of_cores = line.split('=')[1].rstrip()
+            elif line.startswith("base_error_rate="):
+                base_error_rate = line.split('=')[1].rstrip()
+            elif line.startswith("outer_distance="):
+                outer_distance = line.split('=')[1].rstrip()
+            elif line.startswith("standar_deviation="):
+                standar_deviation = line.split('=')[1].rstrip()
+            elif line.startswith("coverage="):
+                coverage = line.split('=')[1].rstrip()
+            elif line.startswith("mutation_rate="):
+                mutation_rate = line.split('=')[1].rstrip()
+            elif line.startswith("indel_fraction="):
+                indel_fraction = line.split('=')[1].rstrip()
+            elif line.startswith("indel_extended="):
+                indel_extended = line.split('=')[1].rstrip()
+            elif line.startswith("seed_random_generator="):
+                seed_random_generator = line.split('=')[1].rstrip()
+            elif line.startswith("discard_ambiguos="):
+                discard_ambiguos = line.split('=')[1].rstrip()
+            elif line.startswith("haplotype_mode="):
+                haplotype_mode = line.split('=')[1].rstrip()
+            elif line.startswith("output_directory="):
+                output_directory = line.split('=')[1].rstrip()
+            elif line.startswith("verbose_mode="):
+                verbose_mode = line.split('=')[1].rstrip()
+            elif line.startswith("group_bar_chart="):
+                group_bar_chart = line.split('=')[1].rstrip()
+            elif line.startswith("report_cross_mapped="):
+                report_cross_mapped = line.split('=')[1].rstrip()
+            elif line.startswith("mapper_template_path="):
+                mapper_template_path = line.split('=')[1].rstrip()
+            elif line.startswith("min_seed_length="):
+                min_seed_length = line.split('=')[1].rstrip()
+            elif line.startswith("matching_score="):
+                matching_score = line.split('=')[1].rstrip()
+            elif line.startswith("mismatch_penalty="):
+                mismatch_penalty = line.split('=')[1].rstrip()
+            elif line.startswith("store_com="):
+                store_com = line.split('=')[1].rstrip()
+
+        fastqpath_list = []
+        for fastq,path in zip(fastaq_list,path_file_list):
+            print(os.path.join(path,fastq))
+            fastqpath_list.append(os.path.join(path,fastq))
+        list_files_string = ' '.join(fastqpath_list)
+        genome_name_string = ' '.join(genome_name_list)
+        read_length_string = ",".join(read_len_list)
+        number_of_reads_string = " ".join(number_of_reads_list)
+        id = random.randint(1,100000)
+        if fastqpath_list != [''] and genome_name_list != [''] and read_len_list != [''] and number_of_reads_list != ['']:
             if mapper_template_path == "":
-                command = f"crossmapper DNA -g {list_files_string} -gn {genome_name_string} -rlen {read_length_string} -rlay {read_configuration} -N {number_of_reads_string} -t {number_of_cores} -e {base_error_rate} -d {oouter_distance} -s {standar_deviation} -C {coverage} -r {mutation_rate} -R {indel_fraction} -X {indel_extended} -S {seed_random_generator} -AMB {discard_ambiguos} -hapl {haplotype_mode} -o {output_directory} --verbose {verbose_mode} -gb {group_bar_chart} -rc {report_cross_mapped} -k {min_seed_length} -A {matching_score} -B {missmatch_penalty}"
-                ssh = paramiko.SSHClient()
-                ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-                ssh.connect(hostname=host, username=username, password=password)
-                # stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}crossmapperdna.txt; echo {command} >> {store_com}crossmapperdna.txt')
-                # stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}crossmapperdna.sh; echo {command} >> {store_com}crossmapperdna.sh')
-                stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}crossmapperdna.sh; echo "#!/bin/bash" > {store_com}crossmapperdna.sh; echo {command} >> {store_com}crossmapperdna.sh')
-                output = stdout.readlines()
-                error = stderr.readlines()
-                ssh.close()
-                data = {'command':command}
-                return render_template('command.html',data=data)
-            else:
-                command = f"crossmapper DNA -g {list_files_string} -gn {genome_name_string} -rlen {read_length_string} -rlay {read_configuration} -N {number_of_reads_string} -t {number_of_cores} -e {base_error_rate} -d {oouter_distance} -s {standar_deviation} -C {coverage} -r {mutation_rate} -R {indel_fraction} -X {indel_extended} -S {seed_random_generator} -AMB {discard_ambiguos} -hapl {haplotype_mode} -o {output_directory} --verbose {verbose_mode} -gb {group_bar_chart} -rc {report_cross_mapped} --mapper-template {mapper_template_path} -k {min_seed_length} -A {matching_score} -B {missmatch_penalty}"
-                ssh = paramiko.SSHClient()
-                ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-                ssh.connect(hostname=host, username=username, password=password)
-                # stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}crossmapperdna.txt; echo {command} >> {store_com}crossmapperdna.txt')
-                # stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}crossmapperdna.sh; echo {command} >> {store_com}crossmapperdna.sh')
-                stdin, stdout, stderr = ssh.exec_command(f'touch {store_com}crossmapperdna.sh; echo "#!/bin/bash" > {store_com}crossmapperdna.sh; echo {command} >> {store_com}crossmapperdna.sh')
-                output = stdout.readlines()
-                error = stderr.readlines()
-                ssh.close()
-                data = {'command':command}
-                return render_template('command.html',data=data)
+                command = f"/gpfs/projects/bsc40/project/pipelines/anaconda3/envs/crossmapper_v111/bin/crossmapper DNA -g {list_files_string} -gn {genome_name_string} -rlen {read_length_string} -rlay {read_configuration} -N {number_of_reads_string} -t {number_of_cores} -e {base_error_rate} -d {outer_distance} -s {standar_deviation} -C {coverage} -r {mutation_rate} -R {indel_fraction} -X {indel_extended} -S {seed_random_generator} -AMB {discard_ambiguos} -hapl {haplotype_mode} -o {output_directory} --verbose {verbose_mode} -gb {group_bar_chart} -rc {report_cross_mapped} -k {min_seed_length} -A {matching_score} -B {mismatch_penalty}"
+                with open(os.path.join(CROSSMAPER_FOLDER,"crossmaper.sh"),"w") as f:
+                    f.write(f"""#!/bin/bash
+#SBATCH --job-name=crossmaper.{id}
+#SBATCH --chdir=/gpfs/projects/bsc40/project/pipelines/multiplex/jobs/
+#SBATCH --output=/gpfs/projects/bsc40/project/pipelines/multiplex/jobs/%j.out
+#SBATCH --error=/gpfs/projects/bsc40/project/pipelines/multiplex/jobs/%j.err
+#SBATCH --time=02:00:00
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=48
+#SBATCH --qos=debug
+{command}""") 
+                try:
+                    ssh = paramiko.SSHClient()
+                    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+                    ssh.connect(hostname=host, username=username, password=password)
+                    sftp = ssh.open_sftp()
+                    print(store_com)
+                    if store_com.endswith("/"):
+                        store_com = store_com[:-1]
+                    print(store_com)
+                    sftp.put(os.path.join(CROSSMAPER_FOLDER,"crossmaper.sh"), store_com + "/crossmaper.sh")
+                    sftp.close()
+                    ssh.close()
+                    os.remove(os.path.join(CROSSMAPER_FOLDER,"crossmaper.sh"))
+                    data = {'command':command}
+                    return render_template('command.html',data=data)
+                except paramiko.AuthenticationException:
+                    print("Authentication failed. Please check your credentials.")
+                    command = "Authentication failed. Please check your credentials."
+                    os.remove(os.path.join(CROSSMAPER_FOLDER,"crossmaper.sh"))
+                    data = {'command':command}
+                    return render_template('command.html',data=data)
+                except paramiko.SSHException as ssh_exception:
+                    print(f"SSH connection failed: {str(ssh_exception)}")
+                    command = "SSH connection failed: " + str(ssh_exception)
+                    os.remove(os.path.join(CROSSMAPER_FOLDER,"crossmaper.sh"))
+                    data = {'command':command}
+                    return render_template('command.html',data=data)
+                except Exception as e:
+                    print(f"An error occurred: {str(e)}")
+                    command = "An error occurred: " + str(e)
+                    os.remove(os.path.join(CROSSMAPER_FOLDER,"crossmaper.sh"))
+                    data = {'command':command}
+                    return render_template('command.html',data=data)            
+            elif mapper_template_path != "":
+                command = f"/gpfs/projects/bsc40/project/pipelines/anaconda3/envs/crossmapper_v111/bin/crossmapper DNA -g {list_files_string} -gn {genome_name_string} -rlen {read_length_string} -rlay {read_configuration} -N {number_of_reads_string} -t {number_of_cores} -e {base_error_rate} -d {outer_distance} -s {standar_deviation} -C {coverage} -r {mutation_rate} -R {indel_fraction} -X {indel_extended} -S {seed_random_generator} -AMB {discard_ambiguos} -hapl {haplotype_mode} -o {output_directory} --verbose {verbose_mode} -gb {group_bar_chart} -rc {report_cross_mapped} --mapper-template {mapper_template_path} -k {min_seed_length} -A {matching_score} -B {mismatch_penalty}"
+                with open(os.path.join(CROSSMAPER_FOLDER,"crossmaper.sh"),"w") as f:
+                    f.write(f"""#!/bin/bash
+#SBATCH --job-name=crossmaper.{id}
+#SBATCH --chdir=/gpfs/projects/bsc40/project/pipelines/multiplex/jobs/
+#SBATCH --output=/gpfs/projects/bsc40/project/pipelines/multiplex/jobs/%j.out
+#SBATCH --error=/gpfs/projects/bsc40/project/pipelines/multiplex/jobs/%j.err
+#SBATCH --time=02:00:00
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=48
+#SBATCH --qos=debug
+{command}""") 
+                try:
+                    ssh = paramiko.SSHClient()
+                    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+                    ssh.connect(hostname=host, username=username, password=password)
+                    sftp = ssh.open_sftp()
+                    print(store_com)
+                    if store_com.endswith("/"):
+                        store_com = store_com[:-1]
+                    print(store_com)
+                    sftp.put(os.path.join(CROSSMAPER_FOLDER,"crossmaper.sh"), store_com + "/crossmaper.sh")
+                    sftp.close()
+                    ssh.close()
+                    os.remove(os.path.join(CROSSMAPER_FOLDER,"crossmaper.sh"))
+                    data = {'command':command}
+                    return render_template('command.html',data=data)
+                except paramiko.AuthenticationException:
+                    print("Authentication failed. Please check your credentials.")
+                    command = "Authentication failed. Please check your credentials."
+                    os.remove(os.path.join(CROSSMAPER_FOLDER,"crossmaper.sh"))
+                    data = {'command':command}
+                    return render_template('command.html',data=data)
+                except paramiko.SSHException as ssh_exception:
+                    print(f"SSH connection failed: {str(ssh_exception)}")
+                    command = "SSH connection failed: " + str(ssh_exception)
+                    os.remove(os.path.join(CROSSMAPER_FOLDER,"crossmaper.sh"))
+                    data = {'command':command}
+                    return render_template('command.html',data=data)
+                except Exception as e:
+                    print(f"An error occurred: {str(e)}")
+                    command = "An error occurred: " + str(e)
+                    os.remove(os.path.join(CROSSMAPER_FOLDER,"crossmaper.sh"))
+                    data = {'command':command}
+                    return render_template('command.html',data=data)        
+        else:
+            return render_template('crossmaperdna.html',error="Please fill all fields")
     elif is_logged() != True:
         return render_template('sshlogin.html')
             # return render_template('crossmaperdna.html')
@@ -639,21 +723,26 @@ def crossmaperrna():
         for fastq,path in zip(fastaq_list,path_file_list):
             print(os.path.join(path,fastq))
             fastqpath_list.append(os.path.join(path,fastq))
+        annotationspath_list = []
+        for annotations,path in zip(annotations_gtf_list,path_file_list):
+            print(os.path.join(path,annotations))
+            annotationspath_list.append(os.path.join(path,annotations))
         list_files_string = ' '.join(fastqpath_list)
         genome_name_string = ' '.join(genome_name_list)
         read_length_string = ",".join(read_len_list)
         number_of_reads_string = " ".join(number_of_reads_list)
-        annotations_gtf_ls_str = " ".join(annotations_gtf_list)
+        annotations_gtf_ls_str = " ".join(annotationspath_list)
+        id = random.randint(1,100000)
         if fastqpath_list != [''] and genome_name_list != [''] and read_len_list != [''] and number_of_reads_list != [''] and annotations_gtf_list != ['']:
             if mapper_template_path == "":
-                command = f"crossmapper RNA -g {list_files_string} -gn {genome_name_string} -rlen {read_length_string} -rlay {read_configuration} -N {number_of_reads_string} -a {annotations_gtf_ls_str} -t {number_of_cores} -e {base_error_rate} -d {outer_distance} -s {standar_deviation} -C {coverage} -r {mutation_rate} -R {indel_fraction} -X {indel_extended} -S {seed_random_generator} -AMB {discard_ambiguos} -hapl {haplotype_mode} -o {output_directory} --verbose {verbose_mode} -gb {group_bar_chart} -rc {report_cross_mapped} -max_mismatch_per_len {max_mismatch_per_len} -bact_mode {bact_mode} -max_mismatch {max_mismatch}" # same without -star_tmp
+                command = f"/gpfs/projects/bsc40/project/pipelines/anaconda3/envs/crossmapper_v111/bin/crossmapper RNA -g {list_files_string} -gn {genome_name_string} -rlen {read_length_string} -rlay {read_configuration} -N {number_of_reads_string} -a {annotations_gtf_ls_str} -t {number_of_cores} -e {base_error_rate} -d {outer_distance} -s {standar_deviation} -C {coverage} -r {mutation_rate} -R {indel_fraction} -X {indel_extended} -S {seed_random_generator} -AMB {discard_ambiguos} -hapl {haplotype_mode} -o {output_directory} --verbose {verbose_mode} -gb {group_bar_chart} -rc {report_cross_mapped} -max_mismatch_per_len {max_mismatch_per_len} -bact_mode {bact_mode} -max_mismatch {max_mismatch}" # same without -star_tmp
                 with open(os.path.join(CROSSMAPER_FOLDER,"crossmaper.sh"),"w") as f:
                     f.write(f"""#!/bin/bash
-#SBATCH --job-name=crossmaper.1
+#SBATCH --job-name=crossmaper.{id}
 #SBATCH --chdir=/gpfs/projects/bsc40/project/pipelines/multiplex/jobs/
 #SBATCH --output=/gpfs/projects/bsc40/project/pipelines/multiplex/jobs/%j.out
 #SBATCH --error=/gpfs/projects/bsc40/project/pipelines/multiplex/jobs/%j.err
-#SBATCH --time=0:30:00
+#SBATCH --time=02:00:00
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=48
 #SBATCH --qos=debug
@@ -663,8 +752,14 @@ def crossmaperrna():
                     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
                     ssh.connect(hostname=host, username=username, password=password)
                     sftp = ssh.open_sftp()
+                    print(store_com)
+                    if store_com.endswith("/"):
+                        store_com = store_com[:-1]
+                    print(store_com)
                     sftp.put(os.path.join(CROSSMAPER_FOLDER,"crossmaper.sh"), store_com + "/crossmaper.sh")
                     sftp.close()
+                    stdin,stdout, stderr = ssh.exec_command(f"cat {store_com}/crossmaper.sh")
+                    print(stdout.readlines())
                     ssh.close()
                     os.remove(os.path.join(CROSSMAPER_FOLDER,"crossmaper.sh"))
                     data = {'command':command}
@@ -684,18 +779,21 @@ def crossmaperrna():
                 except Exception as e:
                     print(f"An error occurred: {str(e)}")
                     command = "An error occurred: " + str(e)
-                    os.remove(os.path.join(CROSSMAPER_FOLDER,"crossmaper.sh"))
+                    with open(os.path.join(CROSSMAPER_FOLDER,"crossmaper.sh"),"r") as f:
+                        lines = f.readlines()
+                        print(lines)
+                    # os.remove(os.path.join(CROSSMAPER_FOLDER,"crossmaper.sh"))
                     data = {'command':command}
                     return render_template('command.html',data=data)
             elif mapper_template_path != "":       
-                command = f"crossmapper RNA -g {list_files_string} -gn {genome_name_string} -rlen {read_length_string} -rlay {read_configuration} -N {number_of_reads_string} -a {annotations_gtf_ls_str} -t {number_of_cores} -e {base_error_rate} -d {outer_distance} -s {standar_deviation} -C {coverage} -r {mutation_rate} -R {indel_fraction} -X {indel_extended} -S {seed_random_generator} -AMB {discard_ambiguos} -hapl {haplotype_mode} -o {output_directory} --verbose {verbose_mode} -gb {group_bar_chart} -rc {report_cross_mapped} --mapper-template {mapper_template_path} -max_mismatch_per_len {max_mismatch_per_len} -bact_mode {bact_mode} -max_mismatch {max_mismatch}" # same without -star_tmp
+                command = f"/gpfs/projects/bsc40/project/pipelines/anaconda3/envs/crossmapper_v111/bin/crossmapper RNA -g {list_files_string} -gn {genome_name_string} -rlen {read_length_string} -rlay {read_configuration} -N {number_of_reads_string} -a {annotations_gtf_ls_str} -t {number_of_cores} -e {base_error_rate} -d {outer_distance} -s {standar_deviation} -C {coverage} -r {mutation_rate} -R {indel_fraction} -X {indel_extended} -S {seed_random_generator} -AMB {discard_ambiguos} -hapl {haplotype_mode} -o {output_directory} --verbose {verbose_mode} -gb {group_bar_chart} -rc {report_cross_mapped} --mapper-template {mapper_template_path} -max_mismatch_per_len {max_mismatch_per_len} -bact_mode {bact_mode} -max_mismatch {max_mismatch}" # same without -star_tmp
                 with open(os.path.join(CROSSMAPER_FOLDER,"crossmaper.sh"),"w") as f:
                     f.write(f"""#!/bin/bash
-#SBATCH --job-name=crossmaper.1
+#SBATCH --job-name=crossmaper.{id}
 #SBATCH --chdir=/gpfs/projects/bsc40/project/pipelines/multiplex/jobs/
 #SBATCH --output=/gpfs/projects/bsc40/project/pipelines/multiplex/jobs/%j.out
 #SBATCH --error=/gpfs/projects/bsc40/project/pipelines/multiplex/jobs/%j.err
-#SBATCH --time=0:30:00
+#SBATCH --time=02:00:00
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=48
 #SBATCH --qos=debug
@@ -705,6 +803,10 @@ def crossmaperrna():
                     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
                     ssh.connect(hostname=host, username=username, password=password)
                     sftp = ssh.open_sftp()
+                    print(store_com)
+                    if store_com.endswith("/"):
+                        store_com = store_com[:-1]
+                    print(store_com)
                     sftp.put(os.path.join(CROSSMAPER_FOLDER,"crossmaper.sh"), store_com + "/crossmaper.sh")
                     sftp.close()
                     ssh.close()
