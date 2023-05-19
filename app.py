@@ -546,6 +546,8 @@ def crossmaperdna():
         read_length_string = ",".join(read_len_list)
         number_of_reads_string = " ".join(number_of_reads_list)
         id = random.randint(1,100000)
+        print(data)
+        print(f"mapper_template_path: {mapper_template_path}")
         if fastqpath_list != [''] and genome_name_list != [''] and read_len_list != [''] and number_of_reads_list != ['']:
             if mapper_template_path == "":
                 command = f"/gpfs/projects/bsc40/project/pipelines/anaconda3/envs/crossmapper_v111/bin/crossmapper DNA -g {list_files_string} -gn {genome_name_string} -rlen {read_length_string} -rlay {read_configuration} -N {number_of_reads_string} -t {number_of_cores} -e {base_error_rate} -d {outer_distance} -s {standar_deviation} -C {coverage} -r {mutation_rate} -R {indel_fraction} -X {indel_extended} -S {seed_random_generator} -AMB {discard_ambiguos} -hapl {haplotype_mode} -o {output_directory} --verbose {verbose_mode} -gb {group_bar_chart} -rc {report_cross_mapped} -k {min_seed_length} -A {matching_score} -B {mismatch_penalty}"
