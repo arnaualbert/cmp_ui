@@ -559,6 +559,10 @@ def crossmaperdna():
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=48
 #SBATCH --qos=debug
+
+module load ANACONDA/5.0.1
+source /gpfs/projects/bsc40/project/pipelines/anaconda3/etc/profile.d/conda.sh
+conda activate crossmapper_v111
 {command}""") 
                 try:
                     ssh = paramiko.SSHClient()
@@ -571,8 +575,7 @@ def crossmaperdna():
                     print(store_com)
                     sftp.put(os.path.join(CROSSMAPER_FOLDER,"crossmaper.sh"), store_com + "/crossmaper.sh")
                     sftp.close()
-                    stdin,stdout, stderr = ssh.exec_command(f"sbatch {store_com}/crossmaper.sh")
-                    print(stdout.readlines())
+                    ssh.exec_command(f"sbatch {store_com}/crossmaper.sh")
                     ssh.close()
                     os.remove(os.path.join(CROSSMAPER_FOLDER,"crossmaper.sh"))
                     data = {'command':command}
@@ -607,6 +610,10 @@ def crossmaperdna():
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=48
 #SBATCH --qos=debug
+
+module load ANACONDA/5.0.1
+source /gpfs/projects/bsc40/project/pipelines/anaconda3/etc/profile.d/conda.sh
+conda activate crossmapper_v111
 {command}""") 
                 try:
                     ssh = paramiko.SSHClient()
@@ -619,8 +626,7 @@ def crossmaperdna():
                     print(store_com)
                     sftp.put(os.path.join(CROSSMAPER_FOLDER,"crossmaper.sh"), store_com + "/crossmaper.sh")
                     sftp.close()
-                    stdin,stdout, stderr = ssh.exec_command(f"sbatch {store_com}/crossmaper.sh")
-                    print(stdout.readlines())
+                    ssh.exec_command(f"sbatch {store_com}/crossmaper.sh")
                     ssh.close()
                     os.remove(os.path.join(CROSSMAPER_FOLDER,"crossmaper.sh"))
                     data = {'command':command}
@@ -766,8 +772,7 @@ conda activate crossmapper_v111
                     print(store_com)
                     sftp.put(os.path.join(CROSSMAPER_FOLDER,"crossmaper.sh"), store_com + "/crossmaper.sh")
                     sftp.close()
-                    stdin,stdout, stderr = ssh.exec_command(f"sbatch {store_com}/crossmaper.sh")
-                    print(stdout.readlines())
+                    ssh.exec_command(f"sbatch {store_com}/crossmaper.sh")
                     ssh.close()
                     os.remove(os.path.join(CROSSMAPER_FOLDER,"crossmaper.sh"))
                     data = {'command':command}
@@ -821,8 +826,7 @@ conda activate crossmapper_v111
                     print(store_com)
                     sftp.put(os.path.join(CROSSMAPER_FOLDER,"crossmaper.sh"), store_com + "/crossmaper.sh")
                     sftp.close()
-                    stdin,stdout, stderr = ssh.exec_command(f"sbatch {store_com}/crossmaper.sh")
-                    print(stdout.readlines())
+                    ssh.exec_command(f"sbatch {store_com}/crossmaper.sh")
                     ssh.close()
                     os.remove(os.path.join(CROSSMAPER_FOLDER,"crossmaper.sh"))
                     data = {'command':command}
